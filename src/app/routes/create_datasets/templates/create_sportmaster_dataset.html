@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<form method="POST">
+    {% for f in form %}
+    <div>
+        {% if f.name == "submit" %}
+            {{ f() }}
+        {% else %}
+            {{ f.label() }} : {{ f() }}
+        {% endif %}
+    </div>
+    {% endfor %}
+</form>
+
+</body>
+</html>
