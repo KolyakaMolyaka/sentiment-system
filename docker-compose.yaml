@@ -4,7 +4,7 @@ services:
   app:
     container_name: app
     build: .
-    entrypoint: flask --app src.app run -h 0.0.0.0
+    entrypoint: flask --app src.app.app run -h 0.0.0.0
     ports:
       - 5000:5000
     networks:
