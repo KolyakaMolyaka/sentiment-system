@@ -3,6 +3,7 @@ from flask import jsonify
 from flask_restx import Namespace, Resource
 
 from .dto import sportmaster_parser_info_reqparser
+from src.app.core.create_datasets.create_datasets_logic import create_sportmaster_dataset
 
 ns = Namespace(
 	name='Create Dataset Controller',
@@ -11,54 +12,25 @@ ns = Namespace(
 	validate=True
 )
 
-from src.app.core.create_datasets.create_datasets_logic import add_together, create_sportmaster_dataset
-from celery.result import AsyncResult
-
-
-@ns.route('/add')
-class TestPostAPI(Resource):
-
-	def post(self):
-		# a = request.form.get("a", type=int)
-		# b = request.form.get("b", type=int)
-		a, b = 10, 20
-		result = add_together.delay(a, b)
-		return {"result_id": result.id}
-
-
-@ns.route('/result/<string:id>')
-class TestGetAPI(Resource):
-	def get(self, id: str) -> dict[str, object]:
-		result = AsyncResult(id)
-		return {
-			"ready": result.ready(),
-			"successful": result.successful(),
-			"value": result.result if result.ready() else None,
-		}
-
 
 @ns.route('/sportmaster')
 class CreateSportmasterDataset(Resource):
-	# @ns.response(int(HTTPStatus.OK))
+	@ns.response(int(HTTPStatus.OK), 'Task created successfully')
 	@ns.expect(sportmaster_parser_info_reqparser)
 	def post(self):
-		"""Создание задачи получения датасета"""
+		"""Create task of getting dataset from sportmaster"""
 
 		request_body = sportmaster_parser_info_reqparser.parse_args()
 		catalog_url: str = request_body.get('catalog_url')
 		pages: int = request_body.get('pages')
+		# cookies: dict = request_body.get('cookies')
+		# headers: dict = request_body.get('headers')
 
-		# бизнес-логика
 		result = create_sportmaster_dataset.delay(catalog_url, pages)
-		return {'result_id': result.id}
+		response = jsonify({
+			'result_id': result.id,
+			'message': 'task created successfully'
+		})
+		response.status_code = HTTPStatus.OK
 
-
-@ns.route('/sportmaster/result/<string:id>')
-class GetSportmasterDataset(Resource):
-	def get(self, id: str):
-		result = AsyncResult(id)
-		return {
-			"ready": result.ready(),
-			"successful": result.successful(),
-			"value": result.result if result.ready() else None,
-		}
+		return response

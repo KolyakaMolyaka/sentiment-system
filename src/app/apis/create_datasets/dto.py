@@ -8,3 +8,9 @@ sportmaster_parser_info_reqparser.add_argument(
 sportmaster_parser_info_reqparser.add_argument(
 	name='pages', type=int, location='json', required=True, nullable=False
 )
+# sportmaster_parser_info_reqparser.add_argument(
+# 	name='cookies', type=dict, location='json', required=True, nullable=False
+# )
+# sportmaster_parser_info_reqparser.add_argument(
+# 	name='headers', type=dict, location='json', required=True, nullable=False
+# )
