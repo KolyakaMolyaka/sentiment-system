@@ -12,10 +12,11 @@ ns = Namespace(
 )
 
 from src.app.core.create_datasets.create_datasets_logic import add_together
+from celery.result import AsyncResult
 
 
 @ns.route('/add')
-class TestAPI(Resource):
+class TestPostAPI(Resource):
 
 	def post(self):
 		# a = request.form.get("a", type=int)
@@ -23,6 +24,17 @@ class TestAPI(Resource):
 		a, b = 10, 20
 		result = add_together.delay(a, b)
 		return {"result_id": result.id}
+
+
+@ns.route('/result/<id>')
+class TestGetAPI(Resource):
+	def get(id: str) -> dict[str, object]:
+		result = AsyncResult(id)
+		return {
+			"ready": result.ready(),
+			"successful": result.successful(),
+			"value": result.result if result.ready() else None,
+		}
 
 
 @ns.route('/sportmaster')
