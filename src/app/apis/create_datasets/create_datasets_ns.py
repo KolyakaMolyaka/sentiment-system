@@ -1,9 +1,9 @@
 from http import HTTPStatus
-from flask import jsonify
+from flask import jsonify, send_file
 from flask_restx import Namespace, Resource
 
 from .dto import sportmaster_parser_info_reqparser
-from src.app.core.create_datasets.create_datasets_logic import create_sportmaster_dataset
+from src.app.core.create_datasets.create_datasets_logic import process_create_sportmaster_dataset
 
 ns = Namespace(
 	name='Create Dataset Controller',
@@ -26,7 +26,8 @@ class CreateSportmasterDataset(Resource):
 		# cookies: dict = request_body.get('cookies')
 		# headers: dict = request_body.get('headers')
 
-		result = create_sportmaster_dataset.delay(catalog_url, pages)
+		result = process_create_sportmaster_dataset(catalog_url, pages)
+
 		response = jsonify({
 			'result_id': result.id,
 			'message': 'task created successfully'

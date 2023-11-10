@@ -28,10 +28,20 @@ def save_json_to_file(json_data, filename: str, ext='json', mode='w'):
 	filename - имя файла, например, main_menu (расширение указывать не нужно)
 	ext - расширение файла, по умолчанию 'json'
 	mode - режим открытия файла
-	iterable_as_array - принимает Generator в качестве json_data
 	"""
 
 	with open(filename + f'.{ext}', mode, encoding='utf-8') as f:
+		json.dump(json_data, f, ensure_ascii=False, indent=4)
+
+
+def save_json_to_filepath(json_data, filepath: str, mode='w'):
+	"""
+	Сохранение JSON в файл
+	filepath - путь файла
+	ext - расширение файла, по умолчанию 'json'
+	mode - режим открытия файла
+	"""
+	with open(filepath, mode, encoding='utf-8') as f:
 		json.dump(json_data, f, ensure_ascii=False, indent=4)
 
 
