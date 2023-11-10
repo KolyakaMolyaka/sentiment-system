@@ -26,9 +26,9 @@ class TestPostAPI(Resource):
 		return {"result_id": result.id}
 
 
-@ns.route('/result/<id>')
+@ns.route('/result/<string:id>')
 class TestGetAPI(Resource):
-	def get(id: str) -> dict[str, object]:
+	def get(self, id: str) -> dict[str, object]:
 		result = AsyncResult(id)
 		return {
 			"ready": result.ready(),
