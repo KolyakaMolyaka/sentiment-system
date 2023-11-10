@@ -5,11 +5,9 @@ def create_app():
 	app = Flask(__name__)
 
 	"""Configurations"""
-	app.config['CELERY'] = {
-		'broker_url': 'redis://redis-db',
-		'result_backend': 'redis://redis-db',
-		'task_ignore_result': True
-	}
+	# take environment variables from .env
+	from dotenv import load_dotenv
+	load_dotenv()
 	app.config.from_prefixed_env()
 
 	"""Routes"""
