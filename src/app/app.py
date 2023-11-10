@@ -15,8 +15,8 @@ def create_app():
 	# celery
 	from src.app.ext.celery.make_celery import celery_init_app
 	app.config['CELERY'] = {
-		'broker_url': 'redis://localhost',
-		'result_backend': 'redis://localhost',
+		'broker_url': 'redis://redis-db',
+		'result_backend': 'redis://redis-db',
 		'task_ignore_result': True
 	}
 	app.config.from_prefixed_env()
