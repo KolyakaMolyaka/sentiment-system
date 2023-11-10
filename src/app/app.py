@@ -12,4 +12,13 @@ def create_app():
 	from .apis import api
 	api.init_app(app)
 
+	# celery
+	from src.app.ext.celery.make_celery import celery_init_app
+	app.config['CELERY'] = {
+		'broker_url': 'redis://localhost',
+		'result_backend': 'redis://localhost',
+		'task_ignore_result': True
+	}
+	app.config.from_prefixed_env()
+	celery_init_app(app)
 	return app

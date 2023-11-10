@@ -4,12 +4,29 @@ services:
   app:
     container_name: app
     build: .
-    entrypoint: flask --app src.app.app run -h 0.0.0.0
+    entrypoint: flask --app src.app.run run -h 0.0.0.0
     ports:
       - 5000:5000
     networks:
       - appnet
       - internet
+
+  redis-db:
+    container_name: redis-db
+    image: redislabs/redismod
+    ports:
+      - 6379:6379
+    networks:
+      - appnet
+
+  celery:
+    container_name: celery
+    build: .
+    entrypoint: celery -A src.app.run.celery_app worker --loglevel=INFO -P threads
+    depends_on:
+      - redis-db
+    networks:
+      - appnet
 
   postgre-db:
     container_name: postgre-db
@@ -31,6 +48,9 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=root
     ports:
       - 5050:80
+    networks:
+      - appnet
+      - internet
 
 
 networks:

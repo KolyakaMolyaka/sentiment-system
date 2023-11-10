@@ -11,6 +11,19 @@ ns = Namespace(
 	validate=True
 )
 
+from src.app.core.create_datasets.create_datasets_logic import add_together
+
+
+@ns.route('/add')
+class TestAPI(Resource):
+
+	def post(self):
+		# a = request.form.get("a", type=int)
+		# b = request.form.get("b", type=int)
+		a, b = 10, 20
+		result = add_together.delay(a, b)
+		return {"result_id": result.id}
+
 
 @ns.route('/sportmaster')
 class CreateSportmasterDataset(Resource):
@@ -28,4 +41,3 @@ class CreateSportmasterDataset(Resource):
 		# возврат
 
 		return request_body
-
