@@ -11,7 +11,7 @@ ns = Namespace(
 	validate=True
 )
 
-from src.app.core.create_datasets.create_datasets_logic import add_together
+from src.app.core.create_datasets.create_datasets_logic import add_together, create_sportmaster_dataset
 from celery.result import AsyncResult
 
 
@@ -49,7 +49,16 @@ class CreateSportmasterDataset(Resource):
 		pages: int = request_body.get('pages')
 
 		# бизнес-логика
+		result = create_sportmaster_dataset.delay(catalog_url, pages)
+		return {'result_id': result.id}
 
-		# возврат
 
-		return request_body
+@ns.route('/sportmaster/result/<string:id>')
+class GetSportmasterDataset(Resource):
+	def get(self, id: str):
+		result = AsyncResult(id)
+		return {
+			"ready": result.ready(),
+			"successful": result.successful(),
+			"value": result.result if result.ready() else None,
+		}
