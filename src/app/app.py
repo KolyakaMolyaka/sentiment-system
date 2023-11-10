@@ -16,6 +16,11 @@ def create_app():
 	app.register_blueprint(create_datasets_bp)
 
 	"""Extensions"""
+
+	# sqlalchemy
+	from .ext.database import db
+	db.init_app(app)
+
 	# swagger
 	from .apis import api
 	api.init_app(app)
@@ -23,5 +28,8 @@ def create_app():
 	# celery
 	from src.app.ext.celery.make_celery import celery_init_app
 	celery_init_app(app)
+
+	from .commands.commands import init_db_command
+	app.cli.add_command(init_db_command)
 
 	return app
