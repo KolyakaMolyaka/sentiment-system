@@ -20,6 +20,9 @@ api = Api(
 from .tokenize_text.dto import tokenization_model
 api.models[tokenization_model.name] = tokenization_model
 
+from .vectorize_text.dto import tokenlist_model
+api.models[tokenlist_model.name] = tokenlist_model
+
 from .create_datasets.create_datasets_ns import ns as create_datasets_ns
 api.add_namespace(create_datasets_ns)
 
@@ -31,3 +34,6 @@ api.add_namespace(auth_ns)
 
 from .tokenize_text.tokenize_text_ns import ns as tokenize_text_ns
 api.add_namespace(tokenize_text_ns)
+
+from .vectorize_text.vectorize_text_ns import ns as vectorize_text_ns
+api.add_namespace(vectorize_text_ns)
