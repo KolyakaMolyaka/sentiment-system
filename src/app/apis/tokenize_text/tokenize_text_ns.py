@@ -22,11 +22,26 @@ class TokenizeTextAPI(Resource):
 		""" Tokenize text """
 		d = tokenization_info_reqparser.parse_args()
 		text = d.get('text')
-		# tokenization_type = d.get('tokenizationType')
 
-		tokens = process_text_tokenization(text)
+		# validate stop words
+		stop_words = d.get('stopWords')
+		if stop_words:
+			stop_words = stop_words[0]
+			for el in stop_words:
+				if not isinstance(el, str):
+					response = jsonify({
+						'error': f'{el} is not an string'
+					})
+					response.status_code = HTTPStatus.CONFLICT
+					return response
+		else:
+			stop_words = None
+
+		# get tokens with used stop words
+		tokens, used_stop_words = process_text_tokenization(text, stop_words=stop_words)
 		response = jsonify({
-			'tokens': tokens
+			'tokens': tokens,
+			'usedStopWords': list(used_stop_words)
 		})
 		response.status_code = HTTPStatus.OK
 

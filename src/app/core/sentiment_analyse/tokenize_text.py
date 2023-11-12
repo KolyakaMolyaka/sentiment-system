@@ -2,7 +2,7 @@ import nltk
 import pymorphy2
 
 
-def process_text_tokenization(text: str, punctuation_marks=None, stop_words=None, morph: 'MorphAnalyzer' = pymorphy2.MorphAnalyzer()) -> list[str]:
+def process_text_tokenization(text: str, punctuation_marks=None, stop_words=None, morph: 'MorphAnalyzer' = pymorphy2.MorphAnalyzer(), use_default_stop_words=True) -> tuple[list[str], list[str]]:
 	"""
 	Вход:
 		- текст комментария
@@ -21,8 +21,17 @@ def process_text_tokenization(text: str, punctuation_marks=None, stop_words=None
 	"""
 	if not punctuation_marks:
 		punctuation_marks = list('!?,.:-()') + ['..'] + ['...']
-	if not stop_words:
-		stop_words = nltk.corpus.stopwords.words('russian')
+
+	if use_default_stop_words:
+		default_stop_words = set(nltk.corpus.stopwords.words('russian'))
+	else:
+		default_stop_words = set()
+
+	if stop_words:
+		stop_words = set(stop_words).union(default_stop_words)
+	else:
+		stop_words = default_stop_words
+
 
 	text = text.lower()
 	tokens = nltk.tokenize.word_tokenize(text)
@@ -34,4 +43,4 @@ def process_text_tokenization(text: str, punctuation_marks=None, stop_words=None
 		lemma = morph.parse(t)[0].normal_form
 		if lemma not in stop_words:
 			preprocessed_text.append(lemma)
-	return preprocessed_text
+	return preprocessed_text, stop_words
