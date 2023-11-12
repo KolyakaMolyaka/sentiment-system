@@ -25,3 +25,6 @@ api.add_namespace(get_datasets_results_ns)
 
 from .auth.auth_ns import ns as auth_ns
 api.add_namespace(auth_ns)
+
+from .tokenize_text.tokenize_text_ns import ns as tokenize_text_ns
+api.add_namespace(tokenize_text_ns)
