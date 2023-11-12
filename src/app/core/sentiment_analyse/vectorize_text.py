@@ -1,4 +1,20 @@
 from collections import Counter
+import numpy as np
+
+
+def vectorize_sequences(sequences: list[list[int]], dimension=5000):
+	"""
+	Преобразование последовательностей в мешок слов
+	@param: sequences:list[list[int]] Список последовательностей кодов, который нужно преобразовать в векторы
+	@param: dimension:int размерность каждого преобразованного вектора
+	"""
+	# (кол-во отзывов x максимальное кол-во используемых слов)
+	results = np.zeros((len(sequences), dimension))
+	for i, seq in enumerate(sequences):
+		for index in seq:
+			results[i, index] += 1.
+	# возвращает список списков (для сериализации)
+	return [list(x) for x in results]
 
 
 def text_to_sequence(txt: list[str], word_to_index: dict):
@@ -16,10 +32,14 @@ def text_to_sequence(txt: list[str], word_to_index: dict):
 	return seq
 
 
-def process_convert_tokens_in_seq_of_codes(tokens: list[str], max_words: int = -1):
+def process_vectorize_sequences(sequences: list[list[int]], dimension=-1):
+	sequences = vectorize_sequences(sequences, dimension)
+	return sequences
 
+
+def process_convert_tokens_in_seq_of_codes(tokens: list[str], max_words: int = -1):
 	if max_words == -1:
-		max_words = len(tokens) + 2 # +2 for unknown word and filler
+		max_words = len(tokens) + 2  # +2 for unknown word and filler
 
 	words = Counter()
 	for t in tokens:

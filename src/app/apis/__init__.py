@@ -20,7 +20,8 @@ api = Api(
 from .tokenize_text.dto import tokenization_model
 api.models[tokenization_model.name] = tokenization_model
 
-from .vectorize_text.dto import tokenlist_model
+from .vectorize_text.dto import vectorization_sequence_model, tokenlist_model
+api.models[vectorization_sequence_model.name] = vectorization_sequence_model
 api.models[tokenlist_model.name] = tokenlist_model
 
 from .create_datasets.create_datasets_ns import ns as create_datasets_ns

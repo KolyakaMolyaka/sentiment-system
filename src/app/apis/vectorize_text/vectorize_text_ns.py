@@ -2,10 +2,11 @@ from http import HTTPStatus
 from flask import jsonify
 from flask_restx import Namespace, Resource
 from src.app.core.sentiment_analyse.vectorize_text import (
-	process_convert_tokens_in_seq_of_codes
+	process_convert_tokens_in_seq_of_codes,
+	process_vectorize_sequences
 )
 
-from .dto import tokenlist_model
+from .dto import vectorization_sequence_model, tokenlist_model
 from ..utilities.utils import fill_with_default_values
 
 ns = Namespace(
@@ -40,4 +41,23 @@ class VectorizationAPI(Resource):
 		return response
 
 
+@ns.route('/vectorize_sequences')
+class VectorizationSequenceAPI(Resource):
+	@ns.response(int(HTTPStatus.OK), 'Vectorized sequences')
+	@ns.expect(vectorization_sequence_model)
+	def post(self):
+		""" Vectorize sequence using Bag Of Words Algorithm """
 
+		fill_with_default_values(ns.payload, vectorization_sequence_model)
+		d = ns.payload
+
+		sequence = d.get('sequences')
+		dimension = d.get('dimension')
+
+		vectorized_sequences = process_vectorize_sequences(sequence, dimension)
+		response = jsonify({
+			'vectorizedSequences': vectorized_sequences
+		})
+		response.status_code = HTTPStatus.OK
+
+		return response
