@@ -2,6 +2,30 @@ from collections import Counter
 import numpy as np
 
 
+def vectorize_text(txt: list[str], max_review_len: int):
+	"""
+	Векторизация текста на основе имеющихся токенов
+	@param: txt:list[str] Список токенов, подлежащих векторизации
+	@param: navec:Navec модель сопоставления слова к вектору
+	@param: max_review_len:int максимальная длина вектора
+	"""
+	from . import navec
+
+	unk = navec['<unk>']
+	text_embeddings = []
+	for tocken in txt:
+		embedding = navec.get(tocken, unk)
+		text_embeddings.append(embedding)
+
+	# Дополняем или обрезаем отзывы для фиксированной длины max_review_len
+	l = len(text_embeddings)
+	if l > max_review_len:
+		text_embeddings = text_embeddings[:max_review_len]
+	else:
+		text_embeddings.extend([navec['<pad>']] * (max_review_len - l))
+	return [list(emb) for emb in text_embeddings]
+
+
 def vectorize_sequences(sequences: list[list[int]], dimension=5000):
 	"""
 	Преобразование последовательностей в мешок слов
@@ -31,6 +55,10 @@ def text_to_sequence(txt: list[str], word_to_index: dict):
 			seq.append(index)
 	return seq
 
+
+def process_embeddings_vectorization(txt: list[str], max_review_len: int):
+	embeddings = vectorize_text(txt, max_review_len)
+	return embeddings
 
 def process_vectorize_sequences(sequences: list[list[int]], dimension=-1):
 	sequences = vectorize_sequences(sequences, dimension)

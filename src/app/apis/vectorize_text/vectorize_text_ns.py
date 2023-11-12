@@ -3,10 +3,11 @@ from flask import jsonify
 from flask_restx import Namespace, Resource
 from src.app.core.sentiment_analyse.vectorize_text import (
 	process_convert_tokens_in_seq_of_codes,
-	process_vectorize_sequences
+	process_vectorize_sequences,
+	process_embeddings_vectorization
 )
 
-from .dto import vectorization_sequence_model, tokenlist_model
+from .dto import vectorization_sequence_model, tokenlist_model, embedding_vectorization_model
 from ..utilities.utils import fill_with_default_values
 
 ns = Namespace(
@@ -57,6 +58,28 @@ class VectorizationSequenceAPI(Resource):
 		vectorized_sequences = process_vectorize_sequences(sequence, dimension)
 		response = jsonify({
 			'vectorizedSequences': vectorized_sequences
+		})
+		response.status_code = HTTPStatus.OK
+
+		return response
+
+@ns.route('/embedding_vectorize_text')
+class EmbeddingVectorizationAPI(Resource):
+	@ns.response(int(HTTPStatus.OK), 'Embeddings vectors')
+	@ns.expect(embedding_vectorization_model)
+	def post(self):
+		""" Get embeddings vectors from tokens """
+
+		d = ns.payload
+		tokens = d.get('tokens')
+		# max_review_len = d.get('maxReviewLen')
+		max_review_len = len(tokens)
+
+		embeddings = process_embeddings_vectorization(tokens, max_review_len)
+		embeddings = [[float(num) for num in vect]
+					  for vect in embeddings]
+		response = jsonify({
+			'embeddings': embeddings
 		})
 		response.status_code = HTTPStatus.OK
 

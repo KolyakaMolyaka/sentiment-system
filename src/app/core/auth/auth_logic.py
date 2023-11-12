@@ -7,12 +7,16 @@ from src.app.ext.database.models import User
 def requires_auth(f):
 	@wraps(f)
 	def decorator(*args, **kwargs):
+		unauthorized = {'error': 'Invalid username or password.'}, HTTPStatus.UNAUTHORIZED
 		# validate username and password
 		auth = request.authorization
+		if not auth:
+			return unauthorized
+
 		u = User.query.filter_by(username=auth.username).one_or_none()
-		unauthorized = {'error': 'Invalid username or password.'}, HTTPStatus.UNAUTHORIZED
 		if not u:
 			return unauthorized
+
 		if u.check_password(auth.password) == False:
 			return unauthorized
 

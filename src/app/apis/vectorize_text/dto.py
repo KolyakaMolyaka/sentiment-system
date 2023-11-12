@@ -14,3 +14,9 @@ vectorization_sequence_model = Model('VectorizationSequences', {
 	),
 	'dimension': fields.Integer(required=True, example=5)
 })
+
+embedding_vectorization_model = Model('EmbeddingVectorization', {
+	'tokens': fields.List(fields.String, example=['мама', 'мыть', 'рама'], required=True, default=[]),
+	# 'maxReviewLen': fields.Integer(required=True, example=5)
+})
+
