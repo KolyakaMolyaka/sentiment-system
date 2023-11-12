@@ -1,13 +1,10 @@
-from flask_restx.reqparse import RequestParser
+from flask_restx import Model, fields
 
-# tokenization info request json parser
-tokenization_info_reqparser = RequestParser(bundle_errors=True)
-tokenization_info_reqparser.add_argument(
-	name='text', type=str, location='json', required=True, nullable=False
-)
-tokenization_info_reqparser.add_argument(
-	name='stopWords', type=list, action='append', location='json', required=True, nullable=False
-)
-tokenization_info_reqparser.add_argument(
-	name='useDefaultStopWords', type=bool, location='json', required=True, nullable=False
-)
+tokenization_model = Model('Tokenization', {
+	'tokenizerType': fields.String(required=True,
+								   enum=('nltk-tokenizer', 'default-whitespace-tokenizer'),
+								   example='nltk-tokenizer'),
+	'text': fields.String(required=True, example='Это текст для токенизации'),
+	'stopWords': fields.List(fields.String, example=['ешкин-кот', 'блин'], required=False, default=None),
+	'useDefaultStopWords': fields.Boolean(example=True, default=True, required=False)
+})

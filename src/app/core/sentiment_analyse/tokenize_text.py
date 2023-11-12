@@ -2,7 +2,11 @@ import nltk
 import pymorphy2
 
 
-def process_text_tokenization(text: str, punctuation_marks=None, stop_words=None, morph: 'MorphAnalyzer' = pymorphy2.MorphAnalyzer(), use_default_stop_words=True) -> tuple[list[str], list[str]]:
+def process_text_tokenization(tokenizer_type: str, text: str,
+							  punctuation_marks=None, stop_words=None,
+							  morph=None,
+							  use_default_stop_words=True
+							  ) -> tuple[list[str], list[str]]:
 	"""
 	Вход:
 		- текст комментария
@@ -19,6 +23,9 @@ def process_text_tokenization(text: str, punctuation_marks=None, stop_words=None
 	Выход:
 		- список с обработанными токенами.
 	"""
+	if not morph:
+		morph = pymorphy2.MorphAnalyzer()
+
 	if not punctuation_marks:
 		punctuation_marks = list('!?,.:-()') + ['..'] + ['...']
 
@@ -32,9 +39,15 @@ def process_text_tokenization(text: str, punctuation_marks=None, stop_words=None
 	else:
 		stop_words = default_stop_words
 
-
 	text = text.lower()
-	tokens = nltk.tokenize.word_tokenize(text)
+	if tokenizer_type == 'nltk-tokenizer':
+		tokens = nltk.tokenize.word_tokenize(text)
+	elif tokenizer_type == 'default-whitespace-tokenizer':
+		tokens = text.split()
+	else:
+		# default nltk-tokenizer
+		tokens = nltk.tokenize.word_tokenize(text)
+
 	preprocessed_text = []
 	for t in tokens:
 		if t in punctuation_marks: continue
@@ -43,4 +56,5 @@ def process_text_tokenization(text: str, punctuation_marks=None, stop_words=None
 		lemma = morph.parse(t)[0].normal_form
 		if lemma not in stop_words:
 			preprocessed_text.append(lemma)
+
 	return preprocessed_text, stop_words

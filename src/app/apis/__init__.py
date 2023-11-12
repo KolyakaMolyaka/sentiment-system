@@ -17,6 +17,9 @@ api = Api(
 	authorizations=authorizations
 )
 
+from .tokenize_text.dto import tokenization_model
+api.models[tokenization_model.name] = tokenization_model
+
 from .create_datasets.create_datasets_ns import ns as create_datasets_ns
 api.add_namespace(create_datasets_ns)
 
