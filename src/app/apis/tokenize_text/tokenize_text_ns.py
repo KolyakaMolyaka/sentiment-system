@@ -9,7 +9,7 @@ from ..utilities import utils
 
 ns = Namespace(
 	name='Tokenization Controller',
-	description='Работа с токенизацией',
+	description='Sentence tokenization',
 	path='/tokenization/',
 	validate=True
 )
@@ -19,6 +19,11 @@ ns = Namespace(
 class TokenizeTextAPI(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Tokens of text')
 	@ns.expect(tokenization_model)
+	@ns.doc(
+		description=
+		'Here you can split the text into tokens using the available tokenizers. '
+		'You can also add stop words and/or use preset ones.'
+	)
 	def post(self):
 		""" Tokenize text """
 

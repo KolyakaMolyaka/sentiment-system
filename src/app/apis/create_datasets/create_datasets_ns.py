@@ -7,7 +7,7 @@ from src.app.core.create_datasets.create_datasets_logic import process_create_sp
 
 ns = Namespace(
 	name='Create Dataset Controller',
-	description='Создание датасета',
+	description='Creating datasets',
 	path='/create_dataset/',
 	validate=True
 )
@@ -17,6 +17,10 @@ ns = Namespace(
 class CreateSportmasterDataset(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Task created successfully')
 	@ns.expect(sportmaster_parser_info_reqparser)
+	@ns.doc(
+		description='Here you can create a task to get a dataset. '
+				   'You get the result ID, then you can poll the server for the readiness of the result.'
+	)
 	def post(self):
 		"""Create task of getting dataset from sportmaster"""
 

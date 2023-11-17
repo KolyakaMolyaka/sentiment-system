@@ -15,6 +15,10 @@ ns = Namespace(
 class GetSportmasterDataset(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Result of task')
 	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Invalid catalog url')
+	@ns.doc(
+		description='Here you can get the result of a previously created task to get a dataset. '
+					'If the result is not ready, you will receive a corresponding message.'
+	)
 	def get(self, result_id: str):
 		"""Get status or/and result of sportmaster dataset"""
 

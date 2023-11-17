@@ -36,7 +36,8 @@ def vectorize_sequences(sequences: list[list[int]], dimension=5000):
 	results = np.zeros((len(sequences), dimension))
 	for i, seq in enumerate(sequences):
 		for index in seq:
-			results[i, index] += 1.
+			if index < dimension:
+				results[i, index] += 1.
 	# возвращает список списков (для сериализации)
 	return [list(x) for x in results]
 

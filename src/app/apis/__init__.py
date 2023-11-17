@@ -40,3 +40,6 @@ api.add_namespace(tokenize_text_ns)
 
 from .vectorize_text.vectorize_text_ns import ns as vectorize_text_ns
 api.add_namespace(vectorize_text_ns)
+
+from .analyse_text.analyse_text_ns import ns as analyse_text_ns
+api.add_namespace(analyse_text_ns)
