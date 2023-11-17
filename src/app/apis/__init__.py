@@ -25,6 +25,8 @@ api.models[vectorization_sequence_model.name] = vectorization_sequence_model
 api.models[tokenlist_model.name] = tokenlist_model
 api.models[embedding_vectorization_model.name] = embedding_vectorization_model
 
+from .analyse_text.dto import sentiment_model
+api.models[sentiment_model.name] = sentiment_model
 
 from .create_datasets.create_datasets_ns import ns as create_datasets_ns
 api.add_namespace(create_datasets_ns)
