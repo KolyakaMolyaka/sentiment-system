@@ -28,6 +28,9 @@ api.models[embedding_vectorization_model.name] = embedding_vectorization_model
 from .analyse_text.dto import sentiment_model
 api.models[sentiment_model.name] = sentiment_model
 
+from .model_train.dto import train_model
+api.models[train_model.name] = train_model
+
 from .create_datasets.create_datasets_ns import ns as create_datasets_ns
 api.add_namespace(create_datasets_ns)
 
@@ -45,3 +48,6 @@ api.add_namespace(vectorize_text_ns)
 
 from .analyse_text.analyse_text_ns import ns as analyse_text_ns
 api.add_namespace(analyse_text_ns)
+
+from .model_train.model_train_ns import ns as model_train_ns
+api.add_namespace(model_train_ns)

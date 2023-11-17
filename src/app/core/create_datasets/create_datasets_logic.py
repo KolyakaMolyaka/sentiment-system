@@ -1,6 +1,4 @@
-import os
 import aiohttp
-from flask import current_app
 from celery import shared_task, states
 from celery.exceptions import Ignore
 import asyncio
