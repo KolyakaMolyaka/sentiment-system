@@ -15,11 +15,11 @@ ns = Namespace(
 
 @ns.route('/analyse_text')
 class SentimentAnalyseAPI(Resource):
-	@ns.response(int(HTTPStatus.OK), 'Sentiment result.')
-	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Unknown model type.')
+	@ns.response(int(HTTPStatus.OK), 'Оценка тональности.')
+	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Неизвестный тип модели.')
 	@ns.expect(sentiment_model)
 	def post(self):
-		""" Analyse text with prepared models """
+		""" Анализ тональности текста при помощи обученной модели."""
 
 		d = ns.payload
 

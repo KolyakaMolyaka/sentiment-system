@@ -12,7 +12,7 @@ from ..utilities.utils import fill_with_default_values
 
 ns = Namespace(
 	name='Vectorization Controller',
-	description='Tokens vectorization',
+	description='Векторизация токенов',
 	path='/vectorization/',
 	validate=True
 )
@@ -20,16 +20,16 @@ ns = Namespace(
 
 @ns.route('/convert_tokens_in_codes')
 class VectorizationAPI(Resource):
-	@ns.response(int(HTTPStatus.OK), 'Sequence of codes for given tokens and meta data')
+	@ns.response(int(HTTPStatus.OK), 'Последовательность кодов для токенов и мета-дата.')
 	@ns.expect(tokenlist_model)
 	@ns.doc(
-		description='Here you can turn tokens into a list of codes. '
-					'First, the most common words are selected. '
-					'You can limit the list of words using the maxWords parameter. '
-					'You will receive a sequence that will define your tokens in the form of a list of codes.'
+		description='Преобразование токенов в список кодов. '
+					'Сначала выбираются наиболее встречающиеся слова. '
+					'Вы можете ограничить список слов используя параметр maxWords. '
+					'Вы получите последовательность, которая будет определять ваши токены в виде списка кодов.'
 	)
 	def post(self):
-		""" Convert tokens in sequence of codes """
+		""" Преобразование токенов в список кодов """
 
 		fill_with_default_values(ns.payload, tokenlist_model)
 		d = ns.payload
@@ -50,13 +50,12 @@ class VectorizationAPI(Resource):
 
 @ns.route('/vectorize_sequences')
 class VectorizationSequenceAPI(Resource):
-	@ns.response(int(HTTPStatus.OK), 'Vectorized sequences')
-	@ns.response(int(HTTPStatus.BAD_REQUEST), 'User entered invalid parameters')
+	@ns.response(int(HTTPStatus.OK), 'Векторизованные последовательности.')
+	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Пользователь ввел неправильные параметры.')
 	@ns.expect(vectorization_sequence_model)
 	@ns.doc(
-		description='A bag of words is a vector that contains as many elements as the words being analyzed. '
-					'Each element of the vector corresponds to a specific word, and the value of the vector '
-					'is equal to the number of times the word occurs in the text'
+		description='Мешок слов это вектор, который содержит столько элементов, сколько слов анализируется. '
+					'Каждый элемент вектора соответствует определенному слову, а значение вектора равно количеству раз, когда слово встречается в тексте.'
 
 	)
 	def post(self):
@@ -70,7 +69,7 @@ class VectorizationSequenceAPI(Resource):
 
 		if dimension <= 0:
 			response = jsonify({
-				'error': "'dimension' parameter can't be <= 0."
+				'error': "'dimension' параметр не может быть <= 0."
 			})
 			response.status_code = HTTPStatus.BAD_REQUEST
 			return response
@@ -89,7 +88,7 @@ class EmbeddingVectorizationAPI(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Embeddings vectors')
 	@ns.expect(embedding_vectorization_model)
 	@ns.doc(
-		description='Here you can get a list of vector representations of words obtained using the Navec model'
+		description='Получение векторного представления текста при помощи модели Navec.'
 	)
 	def post(self):
 		""" Get embeddings vectors from tokens """

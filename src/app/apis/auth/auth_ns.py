@@ -20,11 +20,11 @@ ns = Namespace(
 class LogoutAPI(Resource):
 	method_decorators = [requires_auth]
 
-	@ns.response(int(HTTPStatus.OK), 'User logged out successfully.')
-	@ns.response(int(HTTPStatus.UNAUTHORIZED), 'User is unauthorized.')
+	@ns.response(int(HTTPStatus.OK), 'Пользователь вышел из аккаунта.')
+	@ns.response(int(HTTPStatus.UNAUTHORIZED), 'Пользователь неавторизован.')
 	@ns.doc(security='basicAuth')
 	def post(self):
-		return {'message': 'Logged out!'}
+		return {'message': 'Вы неавторизованы!'}
 
 
 # @ns.route('/login')
@@ -40,14 +40,14 @@ class LogoutAPI(Resource):
 
 @ns.route('/register')
 class RegisterAPI(Resource):
-	@ns.response(int(HTTPStatus.OK), 'User registered successfully.')
+	@ns.response(int(HTTPStatus.OK), 'Пользователь успешно зарегистрирован.')
 	@ns.response(int(HTTPStatus.CONFLICT), 'User with the same username is already exists.')
 	@ns.expect(auth_from_form_reqparser)
 	def post(self):
-		"""Register new user"""
+		"""Регистрация нового пользователя"""
 		form_data = auth_from_form_reqparser.parse_args()
 
 		process_register_from_form(**form_data)
-		response = jsonify({})
+		response = jsonify({'message': 'пользователь успешно зарегисрирован'})
 		response.status_code = HTTPStatus.OK
 		return response

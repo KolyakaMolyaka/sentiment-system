@@ -9,9 +9,12 @@ def requires_auth(f):
 	def decorator(*args, **kwargs):
 		# validate username and password
 		auth = request.authorization
-		username = getattr(auth, 'username')
-		password = getattr(auth, 'password')
-		print('credentials:', username, password)
+		try:
+			username = getattr(auth, 'username')
+			password = getattr(auth, 'password')
+			print('credentials:', username, password)
+		except:
+			abort(int(HTTPStatus.UNAUTHORIZED), 'Пользователь не авторизован.')
 		process_login_from_form(username, password)
 
 		return f(*args, **kwargs)
@@ -22,7 +25,7 @@ def requires_auth(f):
 def process_login_from_form(username: str, password: str):
 	u = User.query.filter_by(username=username).one_or_none()
 	if not u:
-		unauthorized = (int(HTTPStatus.NOT_FOUND), 'Invalid username or password')
+		unauthorized = (int(HTTPStatus.NOT_FOUND), 'Неправильное имя пользователя или пароль')
 		abort(*unauthorized)
 
 	if u.check_password(password) == False:
@@ -35,7 +38,7 @@ def process_login_from_form(username: str, password: str):
 def process_register_from_form(username: str, password: str):
 	already_exist_user = User.query.filter_by(username=username).one_or_none()
 	if already_exist_user:
-		abort(int(HTTPStatus.CONFLICT), f'{username} is already exists.')
+		abort(int(HTTPStatus.CONFLICT), f'{username} уже существует.')
 
 	u = User(username=username, is_admin=False)
 	u.set_password(password)

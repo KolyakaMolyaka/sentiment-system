@@ -16,6 +16,6 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 # copy project
-COPY . .
-RUN chmod +x ./entrypoint.sh
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+#COPY . .
+#RUN chmod +x ./entrypoint.sh
+#ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

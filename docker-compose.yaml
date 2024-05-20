@@ -6,6 +6,11 @@ services:
     build: .
     ports:
       - 5000:5000
+    volumes:
+      - type: bind
+        source: ./
+        target: /usr/src/app
+    entrypoint: "/usr/src/app/entrypoint.sh"
     networks:
       - appnet
       - internet
@@ -24,6 +29,10 @@ services:
   celery:
     container_name: celery
     build: .
+    volumes:
+      - type: bind
+        source: ./
+        target: /usr/src/app
     entrypoint: celery -A src.app.run.celery_app worker --loglevel=INFO -P threads
     depends_on:
       - app

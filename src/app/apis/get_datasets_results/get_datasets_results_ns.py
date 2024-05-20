@@ -13,14 +13,13 @@ ns = Namespace(
 
 @ns.route('/sportmaster/<string:result_id>')
 class GetSportmasterDataset(Resource):
-	@ns.response(int(HTTPStatus.OK), 'Result of task')
-	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Invalid catalog url')
+	@ns.response(int(HTTPStatus.OK), 'Результат обработки запроса с заданным ID')
+	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Неправильный каталог (URL)')
 	@ns.doc(
-		description='Here you can get the result of a previously created task to get a dataset. '
-					'If the result is not ready, you will receive a corresponding message.'
+		description='Получение результата запроса по созданию датасета по ID.'
 	)
 	def get(self, result_id: str):
-		"""Get status or/and result of sportmaster dataset"""
+		"""Получение статуса/результата запроса создания датасета с сайта sportmaster"""
 
 		result = AsyncResult(result_id)
 
@@ -28,7 +27,7 @@ class GetSportmasterDataset(Resource):
 		if result.state == 'FAILURE':
 			response = jsonify({
 				'successful': result.successful(),
-				'msg': 'check catalog url'
+				'msg': 'Проверьте правильность URL'
 			})
 
 			response.status_code = HTTPStatus.BAD_REQUEST

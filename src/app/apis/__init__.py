@@ -51,3 +51,10 @@ api.add_namespace(analyse_text_ns)
 
 from .model_train.model_train_ns import ns as model_train_ns
 api.add_namespace(model_train_ns) # <---------------
+
+# метрики модели
+from .metrics.model_metrics_ns import input_to_output_model
+api.models[input_to_output_model.name] = input_to_output_model
+
+from .metrics.model_metrics_ns import model_metrics_ns
+api.add_namespace(model_metrics_ns)
