@@ -9,7 +9,7 @@ from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens
 	vectorize_sequences
 
 
-# @shared_task(ignore_result=False)
+@shared_task(ignore_result=False)
 def train_model_logic(df, max_words):
 	max_words = 10000 + 2
 	df['preprocessed'] = df.apply(

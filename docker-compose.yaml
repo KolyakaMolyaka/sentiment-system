@@ -11,6 +11,7 @@ services:
       - internet
     depends_on:
       - postgre-db
+      - redis-db
 
   redis-db:
     container_name: redis-db
@@ -25,6 +26,7 @@ services:
     build: .
     entrypoint: celery -A src.app.run.celery_app worker --loglevel=INFO -P threads
     depends_on:
+      - app
       - redis-db
     networks:
       - appnet

@@ -50,4 +50,4 @@ from .analyse_text.analyse_text_ns import ns as analyse_text_ns
 api.add_namespace(analyse_text_ns)
 
 from .model_train.model_train_ns import ns as model_train_ns
-api.add_namespace(model_train_ns)
+api.add_namespace(model_train_ns) # <---------------
