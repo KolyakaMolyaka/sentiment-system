@@ -25,6 +25,9 @@ api.models[vectorization_sequence_model.name] = vectorization_sequence_model
 api.models[tokenlist_model.name] = tokenlist_model
 api.models[embedding_vectorization_model.name] = embedding_vectorization_model
 
+from .models_actions.dto import user_ml_model
+api.models[user_ml_model.name] = user_ml_model
+
 from .analyse_text.dto import sentiment_model
 api.models[sentiment_model.name] = sentiment_model
 
@@ -58,3 +61,8 @@ api.models[input_to_output_model.name] = input_to_output_model
 
 from .metrics.model_metrics_ns import model_metrics_ns
 api.add_namespace(model_metrics_ns)
+
+# models actions
+from .models_actions.models_actions_ns import ns as models_actions_ns
+api.add_namespace(models_actions_ns)
+

@@ -7,6 +7,14 @@ class User(db.Model):
 	username = db.Column(db.String(128), nullable=False, unique=True)
 	password = db.Column(db.Text(), nullable=False)
 	is_admin = db.Column(db.Boolean, default=False)
+	ml_models = db.relationship("MlModel", backref="user", lazy='dynamic')
+
+	@classmethod
+	def get(cls, username):
+		""" Получение экземпляра пользователя по username """
+		u = User.query.filter_by(username=username).one_or_none()
+		return u
+
 
 	def __repr__(self):
 		return f'<User: username={self.username}>'

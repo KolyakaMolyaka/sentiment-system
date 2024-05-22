@@ -5,7 +5,7 @@ from src.app.core.train_model.train_model_logic import train_model_logic
 import pandas as pd
 
 from .dto import train_model
-
+from src.app.core.auth.auth_logic import requires_auth
 ns = Namespace(
 	name='Model Train Controller',
 	description='Обучение модели',
@@ -16,20 +16,37 @@ ns = Namespace(
 
 @ns.route('/train_with_teacher')
 class ModelTrainWithTeatherAPI(Resource):
-	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Different lengths of comments and classes')
+	method_decorators = [requires_auth]
+
+	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Не совпадает число комментариев с числом классов.')
 	@ns.expect(train_model)
 	@ns.doc(
-		desctiption='Here you can train models.'
+		desctiption='Обучение модели с учителем.'
 	)
+	@ns.doc(security='basicAuth')
 	def post(self):
+
 		d = ns.payload
+
+		# данные для сохранения модели
+		model_title = d.get('modelTitle')
+
+		# данные для токенизации
+		tokenizer_type = d.get('tokenizerType')
+		stop_words = d.get('stopWords')
+		use_default_stop_words = d.get('useDefaultStopWords')
+
+		# данные для векторизации
+		vectorization_type = d.get('vectorizationType')
 
 		comments = d.get('comments')
 		classes = d.get('classes')
 
+		max_words = d.get('maxWords')
+
 		if len(comments) != len(classes):
 			response = jsonify({
-				'error': 'Lengths of comments and classes are differen.'
+				'error': 'Число комментариев не совпадает с числом классов.'
 			})
 			response.status_code = HTTPStatus.BAD_REQUEST
 			return response
@@ -37,16 +54,18 @@ class ModelTrainWithTeatherAPI(Resource):
 		for c in classes:
 			if c not in (0, 1):
 				response = jsonify({
-					'error': 'Classes can be only 0 - negative, 1 - positive.'
+					'error': 'Классы могут быть только 0 - отрицательный, 1 - положительный.'
 				})
 				response.status_code = HTTPStatus.BAD_REQUEST
 				return response
 
 		train_info = list(zip(comments, classes))
 		df = pd.DataFrame(train_info, columns=['text', 'score'])
-		trained_meta = train_model_logic(df, 10)
+		trained_meta = train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
+										 vectorization_type, model_title,
+										 max_words)
 		response = jsonify({
-			**d, **trained_meta
+			 **trained_meta
 		})
 		response.status_code = HTTPStatus.OK
 

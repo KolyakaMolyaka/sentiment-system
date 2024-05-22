@@ -13,8 +13,8 @@ def vectorize_text(txt: list[str], max_review_len: int):
 
 	unk = navec['<unk>']
 	text_embeddings = []
-	for tocken in txt:
-		embedding = navec.get(tocken, unk)
+	for token in txt:
+		embedding = navec.get(token, unk)
 		text_embeddings.append(embedding)
 
 	# Дополняем или обрезаем отзывы для фиксированной длины max_review_len
