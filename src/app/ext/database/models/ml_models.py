@@ -4,6 +4,12 @@ class MlModel(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	model_title = db.Column(db.String(128), nullable=False)
 	model_accuracy = db.Column(db.Float, nullable=False)
+	classifier = db.Column(db.String(128), nullable=False)
+
+	tokenizer_type = db.Column(db.String(128), nullable=False)
+	vectorization_type = db.Column(db.String(128), nullable=False)
+	use_default_stop_words = db.Column(db.Boolean, nullable=False)
+
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 	def __repr__(self):

@@ -2,6 +2,9 @@ from flask_restx import Model, fields
 
 train_model = Model('TrainInfo', {
 	'modelTitle': fields.String(required=True, example='my_model'),
+	'classifier': fields.String(required=True, example='logistic-regression',
+								enum=('logistic-regression',)
+								),
 	'tokenizerType': fields.String(required=True,
 								   enum=('nltk-tokenizer', 'default-whitespace-tokenizer'),
 								   example='nltk-tokenizer'),

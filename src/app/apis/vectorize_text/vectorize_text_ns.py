@@ -60,6 +60,7 @@ class VectorizationSequenceAPI(Resource):
 	)
 	def post(self):
 		""" Vectorize sequence using Bag Of Words Algorithm """
+		""" Векторизация последовательности с помощью алгоритма 'Мешок слов'"""
 
 		fill_with_default_values(ns.payload, vectorization_sequence_model)
 		d = ns.payload
@@ -91,7 +92,7 @@ class EmbeddingVectorizationAPI(Resource):
 		description='Получение векторного представления текста при помощи модели Navec.'
 	)
 	def post(self):
-		""" Get embeddings vectors from tokens """
+		""" Получение плотных векторных представлений из токенов """
 
 		d = ns.payload
 		tokens = d.get('tokens')

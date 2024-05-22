@@ -16,7 +16,7 @@ from src.app.core.sentiment_analyse.vectorize_text import process_embeddings_vec
 
 @shared_task(ignore_result=False)
 def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
-					  vectorization_type, model_title,
+					  vectorization_type, model_title, classifier,
 					  max_words):
 	# max_words = 10000 + 2
 	df['preprocessed'] = df.apply(
@@ -88,8 +88,12 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		x_test = np.array(test['sequences'].tolist()).reshape(len(test), 300 * 100)
 
 	# обучение модели
-	lr = LogisticRegression(random_state=42, max_iter=500)
-	lr.fit(x_train, y_train)
+	lr = None
+	if classifier == 'logistic-regression':
+		lr = LogisticRegression(random_state=42, max_iter=500)
+		lr.fit(x_train, y_train)
+	else:
+		abort(int(HTTPStatus.CONFLICT), 'Неизвестное значение параметра classifier')
 
 	# оценка точности модели
 	accuracy = lr.score(x_test, y_test)
@@ -127,18 +131,50 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	modelsdir_path = '/models'
 	username = request.authorization.username
 
+
+	filename = dir_path + rf'{modelsdir_path}/{username}/{model_title}/roc_curve.jpg'
+	os.makedirs(os.path.dirname(filename), exist_ok=True)
+	import matplotlib.pyplot as plt
+	plt.plot(fpr, tpr)
+	plt.ylabel('True Positive Rate')
+	plt.xlabel('False Positive Rate')
+	plt.savefig(filename)
+
 	filename = dir_path + rf'{modelsdir_path}/{username}/{model_title}/model.pkl'
 	os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/model.pkl', 'wb') as f:
+	with open(filename, 'wb') as f:
 		pickle.dump(lr, f)
+
+	# x_train
+	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/x_train.txt', 'w') as f:
+		f.write(str(x_train)[1:-1])
+
+	# x_test
+	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/x_test.txt', 'w') as f:
+		f.write(str(x_test)[1:-1])
+
+	# y_train
+	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/y_train.txt', 'w') as f:
+		f.write(str(y_train)[1:-1])
+
+	# y_test
+	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/y_test.txt', 'w') as f:
+		f.write(str(y_test)[1:-1])
 
 	from src.app.ext.database.models import MlModel, User
 	user = User.get(request.authorization.username)
 	for m in user.ml_models:
 		if m.model_title == model_title:
 			abort(int(HTTPStatus.CONFLICT), f'Модель с названием {model_title} уже существует. Сперва удалите её.')
-	new_model = MlModel(model_title=model_title, model_accuracy=accuracy,user_id=user.id)
+	new_model = MlModel(model_title=model_title,
+						model_accuracy=accuracy,
+						classifier=classifier,
+						tokenizer_type=tokenizer_type,
+						vectorization_type=vectorization_type,
+						use_default_stop_words=use_default_stop_words,
+						user_id=user.id)
+
 	new_model.save()
 
 	return {
@@ -148,4 +184,3 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		'auc': lr_auc,
 		'roc_auc': roc_auc
 	}
-

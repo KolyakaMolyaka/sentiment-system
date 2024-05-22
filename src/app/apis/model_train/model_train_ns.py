@@ -39,6 +39,10 @@ class ModelTrainWithTeatherAPI(Resource):
 		# данные для векторизации
 		vectorization_type = d.get('vectorizationType')
 
+
+		# данные для классификатора
+		classifier = d.get('classifier')
+
 		comments = d.get('comments')
 		classes = d.get('classes')
 
@@ -62,7 +66,7 @@ class ModelTrainWithTeatherAPI(Resource):
 		train_info = list(zip(comments, classes))
 		df = pd.DataFrame(train_info, columns=['text', 'score'])
 		trained_meta = train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
-										 vectorization_type, model_title,
+										 vectorization_type, model_title, classifier,
 										 max_words)
 		response = jsonify({
 			 **trained_meta
