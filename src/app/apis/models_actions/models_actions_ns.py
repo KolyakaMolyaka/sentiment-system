@@ -31,13 +31,17 @@ class ModelsInfoAPI(Resource):
 	def get(self):
 		""" Обученные модели """
 		user = User.get(request.authorization.username)
-		models = MlModel.query.filter_by(user_id=user.id)
+		# models = MlModel.query.filter_by(user_id=user.id)
+		models = user.ml_models
+		print(f'{user.username} модели:', [m.model_title for m in models])
 		output_models = [
 			{'model_title': m.model_title,
 			 'model_tokenizer_type': m.tokenizer_type,
 			 'model_vectorization_type': m.vectorization_type,
 			 'model_use_default_stop_words': m.use_default_stop_words,
 			 'model_accuracy': m.model_accuracy,
+			 'model_precision': m.model_precision,
+			 'model_recall': m.model_recall,
 			 } for m in models]
 		response = jsonify({
 			'models': output_models

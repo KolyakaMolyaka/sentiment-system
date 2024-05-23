@@ -17,7 +17,7 @@ from src.app.core.sentiment_analyse.vectorize_text import process_embeddings_vec
 @shared_task(ignore_result=False)
 def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 					  vectorization_type, model_title, classifier,
-					  max_words, classes):
+					  max_words, classes, comments):
 	# max_words = 10000 + 2
 	df['preprocessed'] = df.apply(
 		lambda row: process_text_tokenization(tokenizer_type, row['text'],
@@ -101,7 +101,7 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		abort(int(HTTPStatus.CONFLICT), 'Неизвестное значение параметра classifier')
 
 	# оценка точности модели
-	accuracy = lr.score(x_test, y_test)
+	test_accuracy = lr.score(x_test, y_test)
 
 	# ROC
 	lr_probs = lr.predict_proba(x_test)
@@ -176,13 +176,19 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/y_test.txt', 'w') as f:
 		f.write(','.join(list(map(str, y_test))))
 
+	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/stop_words.txt', 'w', encoding='utf-8') as f:
+		f.write(' '.join(stop_words))
+
 	from src.app.ext.database.models import MlModel, User
 	user = User.get(request.authorization.username)
 	for m in user.ml_models:
 		if m.model_title == model_title:
 			abort(int(HTTPStatus.CONFLICT), f'Модель с названием {model_title} уже существует. Сперва удалите её.')
+
 	new_model = MlModel(model_title=model_title,
-						model_accuracy=accuracy,
+						# model_accuracy=metrics['accuracy'],
+						# model_recall=metrics['recall'],
+						# model_precision=metrics['precision'],
 						classifier=classifier,
 						tokenizer_type=tokenizer_type,
 						vectorization_type=vectorization_type,
@@ -192,35 +198,39 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 
 	new_model.save()
 
+
 	# получение метрик модели
-	from src.app.core.metrics.model_metrics_logic import process_user_get_model_metrics
-	# metrics: dict = process_user_get_model_metrics(y_true: [str], y_pred: [str], positive_label: str) -> dict:
 	y_true = []
 	for c in classes:
 		y_true.append('Positive' if c == 1 else 'Negative')
 	print('y_true', y_true)
 
-	# получение метрик модели
-	# for vector in x_train_copy:
-	# 	res = lr.predict(vector)
-	# 	print('predict', res)
-	#
-	# def embeddings_predict(preprocessed, proba=False):
-	# 	vectorized = vectorize_text(preprocessed, 100)
-	# 	vector = np.array(vectorized).reshape(1, 300 * 100)
-	# 	if proba:
-	# 		return lr.predict_proba(vector)
-	# 	return lr.predict(vector)
-	#
-	# if vectorization_type == 'embeddings':
-	# 	for p in df['preprocessed']:
-	# 		print('analyzed', p)
-	# 		print('result', embeddings_predict(p))
+	y_pred = []
+	from src.app.core.model_actions.model_actions_logic import process_model_prediction_request
+	for comment in comments:
+		prediction = process_model_prediction_request(model_title, comment)[0]
+		negative_accuracy, positive_accuracy = prediction
+		if negative_accuracy > positive_accuracy:
+			prediction_result = 'Negative'
+		else:
+			prediction_result = 'Positive'
+		y_pred.append(prediction_result)
+
+	print('y_pred', y_pred)
+
+	from src.app.core.metrics.model_metrics_logic import process_user_get_model_metrics
+	metrics: dict = process_user_get_model_metrics(y_true, y_pred, positive_label='Positive')
+
+	new_model.model_recall = metrics['recall']
+	new_model.model_accuracy = metrics['accuracy']
+	new_model.model_precision = metrics['precision']
+	new_model.save()
 
 	return {
 		# 'x_train': x_train,
 		# 'y_train': y_train,
-		'accuracy': accuracy,
+		'metrics': metrics,
+		'test_accuracy': test_accuracy,
 		'auc': lr_auc,
 		'roc_auc': roc_auc
 	}
