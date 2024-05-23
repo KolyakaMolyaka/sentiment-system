@@ -1,20 +1,21 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../Wildberries-And-Sportmaster-Async-Parser/"))
 import asyncio
 import aiohttp
-from parsers.wb_parser.entities.wbmenu import WbMenu
-from parsers.wb_parser.entities.category_parser import CategoryParser
-from parsers.utilities import save_json_to_file
-from parsers.utilities.timer import Timer
+from src.app.parsers.wb_parser.entities.wbmenu import WbMenu
+from src.app.parsers.wb_parser.entities.category_parser import CategoryParser
+from src.app.parsers.utilities import save_json_to_file
+from src.app.parsers.utilities.timer import Timer
 
 
-async def main(menu: WbMenu, category_name: str, subcategory_name: str, pages=10):
+async def main(category_name: str, subcategory_name: str, pages=10, menu: WbMenu = WbMenu()):
+	print(menu.show())
+	print('task category name', category_name)
+	print('task subcategory name', subcategory_name)
 	cat = menu.get_category(category_name)
 	sc = cat.get_subcategory(subcategory_name)
 	# sc = cat.get_subcategory('Брюки')
 	async with aiohttp.ClientSession() as session:
 		feedbacks = await CategoryParser.parse(sc, session, pages=pages)
+		print('task parsed feedbacks', feedbacks)
 		return feedbacks
 
 
@@ -27,6 +28,6 @@ if __name__ == '__main__':
 
 	result_filename = category_name + '_' + subcategory_name
 	with Timer() as _:
-		feedbacks = asyncio.run(main(menu, category_name, subcategory_name, pages))
+		feedbacks = asyncio.run(main(category_name, subcategory_name, pages, menu))
 
 	save_json_to_file([f for f in feedbacks], result_filename)

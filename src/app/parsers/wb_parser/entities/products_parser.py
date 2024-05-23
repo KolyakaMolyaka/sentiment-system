@@ -1,6 +1,6 @@
 import asyncio
 
-from parsers.utilities import generate_fake_headers
+from src.app.parsers.utilities import generate_fake_headers
 
 
 async def pick_up_feedback_json(session, feedback_id: int):
@@ -47,6 +47,8 @@ class ProductsParser:
 
 			print(f'\t\t | Starting resolving feedbacks for {product["name"]}')
 			prod_json = await pick_up_product_card_json(session, prod_id)
+			if not prod_json:
+				return None
 			feedback_id = prod_json['imt_id']
 			feedback_json = await pick_up_feedback_json(session, feedback_id)
 			no_feeds_url = f'https://www.wildberries.ru/catalog/{prod_id}/detail.aspx'

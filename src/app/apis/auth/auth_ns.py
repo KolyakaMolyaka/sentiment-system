@@ -10,8 +10,8 @@ from src.app.core.auth.auth_logic import (
 from .dto import auth_from_form_reqparser
 
 ns = Namespace(
-	name='Auth Controller',
-	description='Авторизация',
+	name='Authorization Controller',
+	description='Авторизация/Регистрация пользователя в системе',
 	path='/auth/',
 	validate=True
 )

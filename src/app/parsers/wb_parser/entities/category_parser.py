@@ -1,6 +1,6 @@
-from parsers.wb_parser.entities.category import Category
-from parsers.wb_parser.entities.pages_parser import PagesParser
-from parsers.wb_parser.entities.products_parser import ProductsParser
+from src.app.parsers.wb_parser.entities.category import Category
+from src.app.parsers.wb_parser.entities.pages_parser import PagesParser
+from src.app.parsers.wb_parser.entities.products_parser import ProductsParser
 
 
 class CategoryParser:

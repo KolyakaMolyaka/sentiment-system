@@ -14,6 +14,7 @@ from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens
 from src.app.core.sentiment_analyse.vectorize_text import process_embeddings_vectorization
 
 
+# ПОД ВОПРОСОМ ДЕКОРАТОР
 @shared_task(ignore_result=False)
 def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 					  vectorization_type, model_title, classifier,

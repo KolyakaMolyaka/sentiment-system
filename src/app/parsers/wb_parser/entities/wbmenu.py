@@ -1,6 +1,6 @@
-from parsers.utilities import get_json_by_url
-from .category import Category
-from .exceptions import NoShardTagInCategoryExc
+from src.app.parsers.utilities import get_json_by_url
+from src.app.parsers.wb_parser.entities.category import Category
+from src.app.parsers.wb_parser.entities.exceptions import NoShardTagInCategoryExc
 
 
 class WbMenu():

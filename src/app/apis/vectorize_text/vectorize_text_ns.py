@@ -59,7 +59,6 @@ class VectorizationSequenceAPI(Resource):
 
 	)
 	def post(self):
-		""" Vectorize sequence using Bag Of Words Algorithm """
 		""" Векторизация последовательности с помощью алгоритма 'Мешок слов'"""
 
 		fill_with_default_values(ns.payload, vectorization_sequence_model)

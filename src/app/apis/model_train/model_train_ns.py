@@ -25,6 +25,7 @@ class ModelTrainWithTeatherAPI(Resource):
 	)
 	@ns.doc(security='basicAuth')
 	def post(self):
+		""" Обучение модели МО с учителем согласно заданным параметрам """
 
 		d = ns.payload
 

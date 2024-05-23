@@ -1,7 +1,7 @@
 import aiohttp
 import asyncio
 
-from parsers.utilities import generate_fake_headers
+from src.app.parsers.utilities import generate_fake_headers
 
 
 class PagesParser:

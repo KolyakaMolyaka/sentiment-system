@@ -1,4 +1,4 @@
-from .exceptions import NoShardTagInCategoryExc
+from src.app.parsers.wb_parser.entities.exceptions import NoShardTagInCategoryExc
 class Category:
 	""" Категория меню Wildberries. Может содержать подкатегории. """
 
