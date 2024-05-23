@@ -10,6 +10,8 @@ class MlModel(db.Model):
 	vectorization_type = db.Column(db.String(128), nullable=False)
 	use_default_stop_words = db.Column(db.Boolean, nullable=False)
 
+	max_words = db.Column(db.Integer, nullable=False)
+
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 	def __repr__(self):

@@ -17,7 +17,7 @@ from src.app.core.sentiment_analyse.vectorize_text import process_embeddings_vec
 @shared_task(ignore_result=False)
 def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 					  vectorization_type, model_title, classifier,
-					  max_words):
+					  max_words, classes):
 	# max_words = 10000 + 2
 	df['preprocessed'] = df.apply(
 		lambda row: process_text_tokenization(tokenizer_type, row['text'],
@@ -79,19 +79,24 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	x_test_seq = test['sequences']
 	y_test = test['score']
 
+
 	if vectorization_type == 'bag-of-words':
 		# создание мешка слов
 		x_train = vectorize_sequences(x_train_seq, max_words)
 		x_test = vectorize_sequences(x_test_seq, max_words)
+
 	else:
 		x_train = np.array(train['sequences'].tolist()).reshape(len(train), 300 * 100)
 		x_test = np.array(test['sequences'].tolist()).reshape(len(test), 300 * 100)
 
+
 	# обучение модели
 	lr = None
+
 	if classifier == 'logistic-regression':
 		lr = LogisticRegression(random_state=42, max_iter=500)
 		lr.fit(x_train, y_train)
+
 	else:
 		abort(int(HTTPStatus.CONFLICT), 'Неизвестное значение параметра classifier')
 
@@ -146,21 +151,30 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	with open(filename, 'wb') as f:
 		pickle.dump(lr, f)
 
+
+	def save_sample_in_file(filename,data, delim='\n\n'):
+		with open(filename, 'w', encoding='utf-8') as f:
+			vectors = []
+			for vector in data:
+				str_vector = list(map(str, vector))
+				vectors.append(','.join(str_vector))
+			f.write(delim.join(vectors))
+
 	# x_train
-	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/x_train.txt', 'w') as f:
-		f.write(str(x_train)[1:-1])
+	filename = dir_path + rf'{modelsdir_path}/{username}/{model_title}/x_train.txt'
+	save_sample_in_file(filename, x_train)
 
 	# x_test
-	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/x_test.txt', 'w') as f:
-		f.write(str(x_test)[1:-1])
+	filename = dir_path + rf'{modelsdir_path}/{username}/{model_title}/x_test.txt'
+	save_sample_in_file(filename, x_test)
 
 	# y_train
 	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/y_train.txt', 'w') as f:
-		f.write(str(y_train)[1:-1])
+		f.write(','.join(list(map(str, list(y_train)))))
 
 	# y_test
 	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/y_test.txt', 'w') as f:
-		f.write(str(y_test)[1:-1])
+		f.write(','.join(list(map(str, y_test))))
 
 	from src.app.ext.database.models import MlModel, User
 	user = User.get(request.authorization.username)
@@ -173,9 +187,35 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 						tokenizer_type=tokenizer_type,
 						vectorization_type=vectorization_type,
 						use_default_stop_words=use_default_stop_words,
+						max_words=max_words,
 						user_id=user.id)
 
 	new_model.save()
+
+	# получение метрик модели
+	from src.app.core.metrics.model_metrics_logic import process_user_get_model_metrics
+	# metrics: dict = process_user_get_model_metrics(y_true: [str], y_pred: [str], positive_label: str) -> dict:
+	y_true = []
+	for c in classes:
+		y_true.append('Positive' if c == 1 else 'Negative')
+	print('y_true', y_true)
+
+	# получение метрик модели
+	# for vector in x_train_copy:
+	# 	res = lr.predict(vector)
+	# 	print('predict', res)
+	#
+	# def embeddings_predict(preprocessed, proba=False):
+	# 	vectorized = vectorize_text(preprocessed, 100)
+	# 	vector = np.array(vectorized).reshape(1, 300 * 100)
+	# 	if proba:
+	# 		return lr.predict_proba(vector)
+	# 	return lr.predict(vector)
+	#
+	# if vectorization_type == 'embeddings':
+	# 	for p in df['preprocessed']:
+	# 		print('analyzed', p)
+	# 		print('result', embeddings_predict(p))
 
 	return {
 		# 'x_train': x_train,

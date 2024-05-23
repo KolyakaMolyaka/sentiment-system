@@ -25,8 +25,10 @@ api.models[vectorization_sequence_model.name] = vectorization_sequence_model
 api.models[tokenlist_model.name] = tokenlist_model
 api.models[embedding_vectorization_model.name] = embedding_vectorization_model
 
-from .models_actions.dto import user_ml_model
+from .models_actions.dto import user_ml_model, user_prediction_model
 api.models[user_ml_model.name] = user_ml_model
+api.models[user_prediction_model.name] = user_prediction_model
+
 
 from .analyse_text.dto import sentiment_model
 api.models[sentiment_model.name] = sentiment_model

@@ -67,7 +67,7 @@ class ModelTrainWithTeatherAPI(Resource):
 		df = pd.DataFrame(train_info, columns=['text', 'score'])
 		trained_meta = train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 										 vectorization_type, model_title, classifier,
-										 max_words)
+										 max_words, classes)
 		response = jsonify({
 			 **trained_meta
 		})

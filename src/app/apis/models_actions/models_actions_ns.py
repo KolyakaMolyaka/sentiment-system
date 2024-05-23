@@ -1,10 +1,10 @@
 from http import HTTPStatus
 from flask import jsonify, request, send_file, abort
 from flask_restx import Namespace, Resource
-from .dto import tokenization_model, user_ml_model
+from .dto import user_ml_model, user_prediction_model
 from src.app.ext.database.models import MlModel, User
 from src.app.core.auth.auth_logic import requires_auth
-from src.app.core.model_actions.model_actions_logic import process_model_delete_request
+from src.app.core.model_actions.model_actions_logic import process_model_delete_request, process_model_prediction_request
 # from src.app.core.sentiment_analyse.tokenize_text import (
 # 	process_text_tokenization
 # )
@@ -30,25 +30,6 @@ class ModelsInfoAPI(Resource):
 	@ns.doc(security='basicAuth')
 	def get(self):
 		""" Обученные модели """
-		# utils.fill_with_default_values(ns.payload, tokenization_model)
-		# d = ns.payload
-
-		# Parse payload to get data
-		# text = d.get('text')
-		# use_default_stop_words = d.get('useDefaultStopWords')
-		# stop_words = d.get('stopWords')
-		# tokenizer_type = d.get('tokenizerType')
-
-		# get tokens with used stop words
-		# tokens, used_stop_words = process_text_tokenization(
-		# 	tokenizer_type,
-		# 	text,
-		# 	stop_words=stop_words,
-		# 	use_default_stop_words=use_default_stop_words
-		# )
-
-		# return tokens with used stop words
-
 		user = User.get(request.authorization.username)
 		models = MlModel.query.filter_by(user_id=user.id)
 		output_models = [
@@ -59,8 +40,6 @@ class ModelsInfoAPI(Resource):
 			 'model_accuracy': m.model_accuracy,
 			 } for m in models]
 		response = jsonify({
-			# 'tokens': tokens,
-			# 'usedStopWords': list(used_stop_words)
 			'models': output_models
 		})
 		response.status_code = HTTPStatus.OK
@@ -110,3 +89,40 @@ class DownloadModelAPI(Resource):
 		archive = shutil.make_archive(output_filename, 'zip', dir_name)
 		print(archive)
 		return send_file(archive, mimetype="application/octet-stream", as_attachment=True)
+
+
+
+@ns.route('/model_prediction')
+class ModelsPredictionAPI(Resource):
+	method_decorators = [requires_auth]
+	@ns.response(int(HTTPStatus.OK), 'Предсказание модели')
+	@ns.doc(description='Получение предсказания обученной модели.')
+	@ns.expect(user_prediction_model)
+	@ns.doc(security='basicAuth')
+	def post(self):
+		""" Предсказание тональности на основе обученной модели  """
+		d = ns.payload
+
+		# Parse payload to get data
+		model_title = d.get('modelTitle')
+		text = d.get('text')
+
+		prediction = process_model_prediction_request(model_title, text)[0]
+		negative_accuracy, positive_accuracy = prediction
+
+		if abs(negative_accuracy - positive_accuracy) <= 0.05:
+			prediction_result = 'нейтральная тональность'
+		elif negative_accuracy > positive_accuracy:
+			prediction_result = 'негативная тональность'
+		else:
+			prediction_result = 'позитивная тональность'
+
+		print('neg - pos = ', abs(negative_accuracy - positive_accuracy))
+		print('prediction', prediction)
+
+		response = jsonify({'предсказание': prediction_result,
+							'точность позитивной тональности согласно модели': positive_accuracy,
+							'точность негативной тональности согласно модели': negative_accuracy,
+							})
+		response.status_code = HTTPStatus.OK
+		return response
