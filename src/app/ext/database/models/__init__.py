@@ -1,3 +1,4 @@
 from .user import User
 from .ml_models import MlModel
 from .tokenizer import Tokenizer
+from .vectorization import Vectorization
