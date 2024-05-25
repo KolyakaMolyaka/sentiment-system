@@ -7,19 +7,23 @@ from src.app.ext.database.models import User
 def requires_auth(f):
 	@wraps(f)
 	def decorator(*args, **kwargs):
-		# validate username and password
+		# Требование к авторизованному доступу
 		auth = request.authorization
-		try:
-			username = getattr(auth, 'username')
-			password = getattr(auth, 'password')
-			print('credentials:', username, password)
-			# проверка, правильный ли логин и пароль
-			process_login_from_form(username, password)
-		except:
-			abort(int(HTTPStatus.UNAUTHORIZED), 'Пользователь не авторизован.')
+		if not auth:
+			abort(int(HTTPStatus.UNAUTHORIZED), 'нет заголовка authorization.')
+
+		username, password = getattr(auth, 'username', None), getattr(auth, 'password', None)
+		if not username or not password:
+			abort(int(HTTPStatus.UNAUTHORIZED), 'нет username или password в заголовке authorization.')
+
+		u = User.query.filter_by(username=username).one_or_none()
+		if not u:
+			abort(int(HTTPStatus.UNAUTHORIZED), 'пользователь с username не существует.')
+
+		if not u.check_password(password):
+			abort(int(HTTPStatus.UNAUTHORIZED), f'пользователь {username} имеет другой пароль!')
 
 		return f(*args, **kwargs)
-
 	return decorator
 
 

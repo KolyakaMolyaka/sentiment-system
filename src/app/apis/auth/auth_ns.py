@@ -39,14 +39,17 @@ ns = Namespace(
 
 @ns.route('/check_auth')
 class CheckAuth(Resource):
+	method_decorators = [requires_auth]
 	@ns.response(int(HTTPStatus.OK), 'Пользователь авторизован')
 	@ns.response(int(HTTPStatus.UNAUTHORIZED), 'Пользователь не авторизован.')
 	@ns.doc(security='basicAuth')
 	def post(self):
 		"""Проверка авторизации пользователя """
-		authorized, message = process_user_check_authorization()
-		response = jsonify({'authorized': authorized, 'message': message})
-		response.status_code = HTTPStatus.OK if authorized else HTTPStatus.UNAUTHORIZED
+		# authorized, message = process_user_check_authorization()
+		# response = jsonify({'authorized': authorized, 'message': message})
+		# response.status_code = HTTPStatus.OK if authorized else HTTPStatus.UNAUTHORIZED
+		response = jsonify({'статус': 'ok'})
+		response.status_code = HTTPStatus.OK
 		return response
 
 
@@ -54,7 +57,7 @@ class CheckAuth(Resource):
 @ns.route('/register')
 class RegisterAPI(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Пользователь успешно зарегистрирован.')
-	@ns.response(int(HTTPStatus.CONFLICT), 'User with the same username is already exists.')
+	@ns.response(int(HTTPStatus.CONFLICT), 'Пользователь с таким username уже существует.')
 	@ns.expect(auth_from_form_reqparser)
 	def post(self):
 		"""Регистрация нового пользователя"""
