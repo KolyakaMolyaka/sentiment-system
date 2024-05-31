@@ -7,7 +7,7 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc
 import matplotlib.pyplot as plt
 from src.app.core.metrics.model_metrics_logic import process_user_get_model_metrics
 
-from src.app.ext.database.models import MlModel
+from src.app.ext.database.models import MlModel, Tokenizer, Vectorization
 
 
 class MlModelSaver:
@@ -154,7 +154,9 @@ class MlModelSaver:
 			},
 			'classifier': ml_model.classifier,
 			'tokenizer_type': ml_model.tokenizer_type,
+			'tokenizer_description': Tokenizer.get(ml_model.tokenizer_type).description,
 			'vectorization_type': ml_model.vectorization_type,
+			'vectorization_description': Vectorization.get(ml_model.vectorization_type).description,
 			'max_words': ml_model.max_words,
 			'used_default_stop_words': ml_model.use_default_stop_words
 		}
