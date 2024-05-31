@@ -1,5 +1,16 @@
 from collections import Counter
 import numpy as np
+from src.app.ext.database.models import Vectorization
+from flask import abort
+from http import HTTPStatus
+
+
+def process_vectorization_info(vectorization_title):
+	vectorization = Vectorization.get(vectorization_title)
+	if not vectorization:
+		abort(int(HTTPStatus.NOT_FOUND), f'Метод векторизации {vectorization_title} не существует')
+
+	return vectorization.description
 
 
 def vectorize_text(txt: list[str], max_review_len: int):
@@ -60,6 +71,7 @@ def text_to_sequence(txt: list[str], word_to_index: dict):
 def process_embeddings_vectorization(txt: list[str], max_review_len: int):
 	embeddings = vectorize_text(txt, max_review_len)
 	return embeddings
+
 
 def process_vectorize_sequences(sequences: list[list[int]], dimension=-1):
 	sequences = vectorize_sequences(sequences, dimension)

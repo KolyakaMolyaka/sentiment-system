@@ -17,6 +17,9 @@ def init_db_command():
 @click.command('fill-db')
 @with_appcontext
 def fill_db_command():
+	""" Заполнение БД данными по умолчанию """
+
+	# Информация о токенизаторах
 	nltk_tokenizer = Tokenizer(
 		title='nltk-tokenizer',
 		description='Токенизатор доступен благодаря библиотеке NLTK и функции nltk.tokenize.word_tokenize(), '
@@ -40,4 +43,23 @@ def fill_db_command():
 	word_punck_tokenizer.save()
 
 
-	pass
+	# Информация о методах векторизации
+	bag_of_words_alg = Vectorization(
+		title='bag-of-words',
+		description='Векторизация текста при помощи алгоритма "Мешок слов". '
+					'Вектор содержит столько элементов, сколько анализируемых слов. '
+					'Каждый элемент вектора соответствует определенному слову, а значение равно количеству раз, '
+					'сколько слово встречается в тексте.',
+	)
+	bag_of_words_alg.save()
+
+	embeddings_alg = Vectorization(
+		title='embeddings',
+		description='Векторизация текста при помощи плотного векторного представления. '
+					'Каждому токену соответствует вектор фиксированной длины. '
+					'Элементами вектора могут быть любые действительные числа. '
+					'Реализуется при помощи библиотеки Navec.'
+	)
+	embeddings_alg.save()
+
+	click.echo('Tokenizers and Vectorizations are filled in database.')

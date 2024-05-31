@@ -4,10 +4,11 @@ from flask_restx import Namespace, Resource
 from src.app.core.sentiment_analyse.vectorize_text import (
 	process_convert_tokens_in_seq_of_codes,
 	process_vectorize_sequences,
-	process_embeddings_vectorization
+	process_embeddings_vectorization,
+	process_vectorization_info
 )
 
-from .dto import vectorization_sequence_model, tokenlist_model, embedding_vectorization_model
+from .dto import vectorization_sequence_model, tokenlist_model, embedding_vectorization_model, vectorization_info_model
 from ..utilities.utils import fill_with_default_values
 
 ns = Namespace(
@@ -17,6 +18,27 @@ ns = Namespace(
 	validate=True
 )
 
+@ns.route('/vectorization_info')
+class VectorizationInfoAPI(Resource):
+	@ns.response(int(HTTPStatus.OK), 'Информация о методе векторизации')
+	@ns.response(int(HTTPStatus.NOT_FOUND), 'Метод векторизации не существует')
+	@ns.expect(vectorization_info_model)
+	@ns.doc(description='Получение информации о методе векторизации')
+	def post(self):
+		""" Получение информации о конкретном методе векторизации """
+		d = ns.payload
+
+		vectorization_title = d.get('vectorizationTitle')
+
+		vectorization_description = process_vectorization_info(vectorization_title)
+
+		response = jsonify({
+			'vectorization_title': vectorization_title,
+			'description': vectorization_description
+		})
+		response.status_code = HTTPStatus.OK
+
+		return response
 
 @ns.route('/convert_tokens_in_codes')
 class VectorizationAPI(Resource):

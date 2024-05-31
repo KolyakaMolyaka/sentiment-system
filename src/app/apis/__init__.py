@@ -31,6 +31,9 @@ api.models[embedding_vectorization_model.name] = embedding_vectorization_model
 from .tokenize_text.dto import tokenizer_info_model
 api.models[tokenizer_info_model.name] = tokenizer_info_model
 
+from .vectorize_text.dto import vectorization_info_model
+api.models[vectorization_info_model.name] = vectorization_info_model
+
 from .models_actions.dto import user_ml_model, user_prediction_model
 api.models[user_ml_model.name] = user_ml_model
 api.models[user_prediction_model.name] = user_prediction_model
