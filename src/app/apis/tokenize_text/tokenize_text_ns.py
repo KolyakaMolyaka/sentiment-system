@@ -1,9 +1,9 @@
 from http import HTTPStatus
 from flask import jsonify
 from flask_restx import Namespace, Resource
-from .dto import tokenization_model
+from .dto import tokenization_model, tokenizer_info_model
 from src.app.core.sentiment_analyse.tokenize_text import (
-	process_text_tokenization
+	process_text_tokenization, process_tokenizer_info
 )
 from ..utilities import utils
 
@@ -14,6 +14,28 @@ ns = Namespace(
 	validate=True
 )
 
+
+@ns.route('/tokenizer_info')
+class TokenizerInfoAPI(Resource):
+	@ns.response(int(HTTPStatus.OK), 'Информация о токенизаторе')
+	@ns.response(int(HTTPStatus.NOT_FOUND), 'Токенизатор не существует')
+	@ns.expect(tokenizer_info_model)
+	@ns.doc(description='Получение информации о токенизаторе')
+	def post(self):
+		""" Получение информации о конкретном токенизаторе """
+		d = ns.payload
+
+		tokenizer_title = d.get('tokenizerTitle')
+
+		tokenizer_description = process_tokenizer_info(tokenizer_title)
+
+		response = jsonify({
+			'tokenizer_title': tokenizer_title,
+			'description': tokenizer_description
+		})
+		response.status_code = HTTPStatus.OK
+
+		return response
 
 @ns.route('/tokenize_text')
 class TokenizeTextAPI(Resource):

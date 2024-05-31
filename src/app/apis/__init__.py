@@ -28,6 +28,9 @@ api.models[vectorization_sequence_model.name] = vectorization_sequence_model
 api.models[tokenlist_model.name] = tokenlist_model
 api.models[embedding_vectorization_model.name] = embedding_vectorization_model
 
+from .tokenize_text.dto import tokenizer_info_model
+api.models[tokenizer_info_model.name] = tokenizer_info_model
+
 from .models_actions.dto import user_ml_model, user_prediction_model
 api.models[user_ml_model.name] = user_ml_model
 api.models[user_prediction_model.name] = user_prediction_model

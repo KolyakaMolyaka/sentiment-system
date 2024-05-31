@@ -1,5 +1,8 @@
 import nltk
 import pymorphy2
+from src.app.ext.database.models import Tokenizer
+from flask import abort
+from http import HTTPStatus
 
 
 def process_text_tokenization(tokenizer_type: str, text: str,
@@ -60,3 +63,11 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 			preprocessed_text.append(lemma)
 
 	return preprocessed_text, stop_words
+
+
+def process_tokenizer_info(tokenizer_title):
+	tokenizer = Tokenizer.get(tokenizer_title)
+	if not tokenizer:
+		abort(int(HTTPStatus.NOT_FOUND), f'Токенизатора {tokenizer_title} не существует')
+
+	return tokenizer.description
