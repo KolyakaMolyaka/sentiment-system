@@ -44,6 +44,8 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 		tokens = nltk.tokenize.word_tokenize(text)
 	elif tokenizer_type == 'default-whitespace-tokenizer':
 		tokens = text.split()
+	elif tokenizer_type == 'wordpunct-tokenizer':
+		tokens = nltk.tokenize.wordpunct_tokenize(text)
 	else:
 		# default nltk-tokenizer
 		tokens = nltk.tokenize.word_tokenize(text)

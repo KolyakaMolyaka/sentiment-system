@@ -6,7 +6,6 @@ class User(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	username = db.Column(db.String(128), nullable=False, unique=True)
 	password = db.Column(db.Text(), nullable=False)
-	is_admin = db.Column(db.Boolean, default=False)
 	ml_models = db.relationship("MlModel", backref="user", lazy='dynamic')
 
 	@classmethod

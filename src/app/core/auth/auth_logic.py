@@ -46,7 +46,7 @@ def process_register_from_form(username: str, password: str):
 	if already_exist_user:
 		abort(int(HTTPStatus.CONFLICT), f'{username} уже существует.')
 
-	u = User(username=username, is_admin=False)
+	u = User(username=username)
 	u.set_password(password)
 	u.save()
 

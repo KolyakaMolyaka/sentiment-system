@@ -1,0 +1,15 @@
+classifier: logistic-regression
+max_words: 400
+metrics:
+  accuracy: 0.99
+  confusion_matrix:
+  - - 88
+    - 0
+  - - 1
+    - 11
+  precision: 0.9887640449438202
+  recall: 1.0
+model_title: my_model3
+tokenizer_type: nltk-tokenizer
+used_default_stop_words: true
+vectorization_type: embeddings

@@ -2,7 +2,7 @@ from src.app.ext.database import db
 
 class MlModel(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
-	model_title = db.Column(db.String(128), nullable=False)
+	model_title = db.Column(db.String(128), nullable=False, unique=True)
 
 	model_accuracy = db.Column(db.Float, nullable=True)
 	model_recall = db.Column(db.Float, nullable=True)
@@ -25,6 +25,12 @@ class MlModel(db.Model):
 		""" Запись изменений в БД """
 		db.session.add(self)
 		db.session.commit()
+
+	@classmethod
+	def get(cls, model_title):
+		""" Получение экземпляра пользователя по username """
+		ml_model = MlModel.query.filter_by(model_title=model_title).one_or_none()
+		return ml_model
 
 	@classmethod
 	def delete_model(cls, model_title):

@@ -37,6 +37,23 @@ def create_sportmaster_dataset(self, catalog_url: str, pages: int):
 
 @shared_task(bind=True, ignore_result=False)
 def create_wildberries_dataset(self, category: str, subcategory: str, pages: int):
+
+	return {
+		'text': [
+			'Не видел такой дырявой рубашки',
+			'Хорошая рубашка, красивый цвет. Микровельвет. Под майку отлично. Большемерит сильно. На свой 44 взяла xs и тот большой. Но оставила. Такого цвета больше не нашла у других пролавцов',
+			'Качество ужас,очень длинная !!!!',
+			'Хорошая рубашка',
+			'Отличная рубашка ❤️',
+			'Качество ужас,очень длинная !!!!',
+			'Это не рубашка а фильм ужасов.',
+			'на рост 165 немного большая, но все равно забрала. для тех кто хочет чуть побольше, то берите',
+			'Шикарно. Но я взяла на размер меньше.',
+			'Не стоит своих денег, ткань, покрой, пошив оставляет желать лучшего.'
+		],
+		'classes': [0, 1, 0, 1, 1, 0, 0, 1, 1, 0],
+	 }
+
 	try:
 		feeds = asyncio.run(parse_wildberries_site(category, subcategory, pages))
 	except aiohttp.ContentTypeError:

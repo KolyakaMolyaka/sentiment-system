@@ -8,10 +8,12 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 
 from src.app.core.sentiment_analyse.tokenize_text import process_text_tokenization
-from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens_in_seq_of_codes, text_to_sequence, \
+from src.app.core.sentiment_analyse.vectorize_text import text_to_sequence, \
 	vectorize_sequences, vectorize_text
 
-from src.app.core.sentiment_analyse.vectorize_text import process_embeddings_vectorization
+from .model_saver import MlModelSaver
+
+from src.app.ext.database.models import MlModel, User
 
 
 # ПОД ВОПРОСОМ ДЕКОРАТОР
@@ -19,13 +21,23 @@ from src.app.core.sentiment_analyse.vectorize_text import process_embeddings_vec
 def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 					  vectorization_type, model_title, classifier,
 					  max_words, classes, comments):
-	# max_words = 10000 + 2
+
+
+	# user = User.get(request.authorization.username)
+	# for m in user.ml_models:
+		# if m.model_title == model_title:
+
+	# Проверка, что модели с таким же названием же нет
+	ml_model = MlModel.get(model_title)
+	if ml_model:
+		abort(int(HTTPStatus.CONFLICT), f'Модель с названием {model_title} уже существует. Сперва удалите её.')
+
+
 	df['preprocessed'] = df.apply(
 		lambda row: process_text_tokenization(tokenizer_type, row['text'],
 											  stop_words=stop_words,
 											  use_default_stop_words=use_default_stop_words)[0],
 		axis=1 # axis=1 means row
-
 	)
 
 	print('PREPROCESSED')
@@ -51,22 +63,8 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	elif vectorization_type == 'embeddings':
 
 		df['sequences'] = df.apply(lambda row:
-								   # [
-									   # [float(num) for num in vect]
-									   # for vect in process_embeddings_vectorization(row['preprocessed'], len(row['preprocessed']))
-								   # ]
-								   # process_embeddings_vectorization(row['preprocessed'], len(row['preprocessed']))[0]
 								   vectorize_text(row['preprocessed'], 100)
 								   , axis=1)
-		# print("SEQUENCES")
-		# print(df['sequences'][:4])
-		# print(len(df['sequences'][0]))
-		# print(df['sequences'].tolist())
-		# for tokens in df['preprocessed'].tolist():
-		# 	embeddings = process_embeddings_vectorization()
-		# 	embeddings = [[float(num) for num in vect] for vect in embeddings]
-		# 	list_of_embeddings.append(embeddings)
-		# print(list_of_embeddings)
 	else:
 		abort(int(HTTPStatus.BAD_REQUEST, 'Неправильный тип векторизации'))
 
@@ -104,56 +102,35 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	# оценка точности модели
 	test_accuracy = lr.score(x_test, y_test)
 
-	# ROC
-	lr_probs = lr.predict_proba(x_test)
-	# сохраняет вероятность только для положительного исхода
-	lr_probs = lr_probs[::, 1]
-	try:
-		lr_auc = roc_auc_score(y_test, lr_probs)
-		# рассчитываем roc-кривую
-
-	except ValueError:
-		err = 'not defined'
-		lr_auc = err
-
-	fpr, tpr, treshold = roc_curve(y_test, lr_probs)
-	roc_auc = auc(fpr, tpr)
-
 	if vectorization_type == 'embeddings':
 		x_train = x_train.tolist()
 		y_train = y_train.tolist()
 
-
 	# сохранение модели в папке пользователя
-	# данные для тренировки (x, y)
-	# данные для проверки (x, y)
-	# обученная модель
-	# метрики качества
 
-	import pickle
 	import os
-	dir_path = os.path.dirname(os.path.realpath(__file__))
-	# write models
 	modelsdir_path = '/models'
+	dir_path = os.path.dirname(os.path.realpath(__file__))
 	username = request.authorization.username
 
+	MlModelSaver.verify_path(os.path.join('models', username, model_title)) # ОБЯЗАТЕЛЬНО УБЕДИТЬСЯ
+	ml_model_saver = MlModelSaver(dir_path, username, model_title)
 
-	filename = dir_path + rf'{modelsdir_path}/{username}/{model_title}/roc_curve.jpg'
-	os.makedirs(os.path.dirname(filename), exist_ok=True)
-	import matplotlib.pyplot as plt
-	plt.plot(fpr, tpr)
-	plt.ylabel('True Positive Rate')
-	plt.xlabel('False Positive Rate')
-	plt.savefig(filename)
-
-	filename = dir_path + rf'{modelsdir_path}/{username}/{model_title}/model.pkl'
-	os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-	with open(filename, 'wb') as f:
-		pickle.dump(lr, f)
-
+	# Сохранение модели в файл
+	ml_model_saver.save_model(lr)
+	# Сохранение ROC кривой в файл
+	roc_auc = ml_model_saver.save_roc_curve(lr, x_test, y_test)
+	# Сохранение обучающего датасета
+	# ml_model_saver.save_dataset(comments, df['preprocessed'].tolist(), classes)
+	# Сохранение обучающих векторов в файл
+	# ...
+	# Сохранение стоп-слов в файл
+	ml_model_saver.save_stop_words(stop_words, use_default_stop_words)
+	# Сохранение датафрейма в файл
+	ml_model_saver.save_dataframe(df)
 
 	def save_sample_in_file(filename,data, delim='\n\n'):
+		os.makedirs(os.path.dirname(filename), exist_ok=True)
 		with open(filename, 'w', encoding='utf-8') as f:
 			vectors = []
 			for vector in data:
@@ -161,6 +138,8 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 				vectors.append(','.join(str_vector))
 			f.write(delim.join(vectors))
 
+
+	""" *_train, *_test 
 	# x_train
 	filename = dir_path + rf'{modelsdir_path}/{username}/{model_title}/x_train.txt'
 	save_sample_in_file(filename, x_train)
@@ -176,62 +155,51 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	# y_test
 	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/y_test.txt', 'w') as f:
 		f.write(','.join(list(map(str, y_test))))
+	"""
 
-	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/stop_words.txt', 'w', encoding='utf-8') as f:
-		f.write(' '.join(stop_words))
-
-	from src.app.ext.database.models import MlModel, User
-	user = User.get(request.authorization.username)
-	for m in user.ml_models:
-		if m.model_title == model_title:
-			abort(int(HTTPStatus.CONFLICT), f'Модель с названием {model_title} уже существует. Сперва удалите её.')
 
 	new_model = MlModel(model_title=model_title,
-						# model_accuracy=metrics['accuracy'],
-						# model_recall=metrics['recall'],
-						# model_precision=metrics['precision'],
 						classifier=classifier,
 						tokenizer_type=tokenizer_type,
 						vectorization_type=vectorization_type,
 						use_default_stop_words=use_default_stop_words,
 						max_words=max_words,
-						user_id=user.id)
+						user_id=User.get(username=username).id)
 
 	new_model.save()
 
+	metrics = ml_model_saver.save_model_metrics(comments, classes)
 
-	# получение метрик модели
-	y_true = []
-	for c in classes:
-		y_true.append('Positive' if c == 1 else 'Negative')
-	print('y_true', y_true)
+	ml_model_saver.save_yaml_model_info()
 
-	y_pred = []
-	from src.app.core.model_actions.model_actions_logic import process_model_prediction_request
-	for comment in comments:
-		prediction = process_model_prediction_request(model_title, comment)[0]
-		negative_accuracy, positive_accuracy = prediction
-		if negative_accuracy > positive_accuracy:
-			prediction_result = 'Negative'
-		else:
-			prediction_result = 'Positive'
-		y_pred.append(prediction_result)
 
-	print('y_pred', y_pred)
-
-	from src.app.core.metrics.model_metrics_logic import process_user_get_model_metrics
-	metrics: dict = process_user_get_model_metrics(y_true, y_pred, positive_label='Positive')
-
-	new_model.model_recall = metrics['recall']
-	new_model.model_accuracy = metrics['accuracy']
-	new_model.model_precision = metrics['precision']
-	new_model.save()
+	# # получение метрик модели
+	# y_true = []
+	# for c in classes:
+	# 	y_true.append('Positive' if c == 1 else 'Negative')
+	#
+	# y_pred = []
+	# from src.app.core.model_actions.model_actions_logic import process_model_prediction_request
+	# for comment in comments:
+	# 	prediction = process_model_prediction_request(model_title, comment)[0]
+	# 	negative_accuracy, positive_accuracy = prediction
+	# 	if negative_accuracy > positive_accuracy:
+	# 		prediction_result = 'Negative'
+	# 	else:
+	# 		prediction_result = 'Positive'
+	# 	y_pred.append(prediction_result)
+	#
+	#
+	# from src.app.core.metrics.model_metrics_logic import process_user_get_model_metrics
+	# metrics: dict = process_user_get_model_metrics(y_true, y_pred, positive_label='Positive')
+	#
+	# new_model.model_recall = metrics['recall']
+	# new_model.model_accuracy = metrics['accuracy']
+	# new_model.model_precision = metrics['precision']
+	# new_model.save()
 
 	return {
-		# 'x_train': x_train,
-		# 'y_train': y_train,
 		'metrics': metrics,
 		'test_accuracy': test_accuracy,
-		'auc': lr_auc,
 		'roc_auc': roc_auc
 	}

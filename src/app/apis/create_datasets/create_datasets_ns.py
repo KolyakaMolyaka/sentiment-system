@@ -12,33 +12,33 @@ ns = Namespace(
 	validate=True
 )
 
-
-@ns.route('/sportmaster')
-class CreateSportmasterDataset(Resource):
-	@ns.response(int(HTTPStatus.OK), 'Задача успешно создана!')
-	@ns.expect(sportmaster_parser_info_reqparser)
-	@ns.doc(
-		description='Создание задачи для получения датасета. '
-				   'Вы получите уникальный ID, который будет использован для получения датасета, когда он будет готов.'
-	)
-	def post(self):
-		"""Создание датасета с сайта sportmaster"""
-
-		request_body = sportmaster_parser_info_reqparser.parse_args()
-		catalog_url: str = request_body.get('catalog_url')
-		pages: int = request_body.get('pages')
-		# cookies: dict = request_body.get('cookies')
-		# headers: dict = request_body.get('headers')
-
-		result = process_create_sportmaster_dataset(catalog_url, pages)
-
-		response = jsonify({
-			'result_id': result.id,
-			'message': 'задача успешно создана'
-		})
-		response.status_code = HTTPStatus.OK
-
-		return response
+#
+# @ns.route('/sportmaster')
+# class CreateSportmasterDataset(Resource):
+# 	@ns.response(int(HTTPStatus.OK), 'Задача успешно создана!')
+# 	@ns.expect(sportmaster_parser_info_reqparser)
+# 	@ns.doc(
+# 		description='Создание задачи для получения датасета. '
+# 				   'Вы получите уникальный ID, который будет использован для получения датасета, когда он будет готов.'
+# 	)
+# 	def post(self):
+# 		"""Создание датасета с сайта sportmaster"""
+#
+# 		request_body = sportmaster_parser_info_reqparser.parse_args()
+# 		catalog_url: str = request_body.get('catalog_url')
+# 		pages: int = request_body.get('pages')
+# 		# cookies: dict = request_body.get('cookies')
+# 		# headers: dict = request_body.get('headers')
+#
+# 		result = process_create_sportmaster_dataset(catalog_url, pages)
+#
+# 		response = jsonify({
+# 			'result_id': result.id,
+# 			'message': 'задача успешно создана'
+# 		})
+# 		response.status_code = HTTPStatus.OK
+#
+# 		return response
 
 
 @ns.route('/wildberries')
