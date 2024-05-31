@@ -154,9 +154,9 @@ class MlModelSaver:
 			},
 			'classifier': ml_model.classifier,
 			'tokenizer_type': ml_model.tokenizer_type,
-			'tokenizer_description': Tokenizer.get(ml_model.tokenizer_type).description,
+			'tokenizer_description': str(Tokenizer.get(ml_model.tokenizer_type).description),
 			'vectorization_type': ml_model.vectorization_type,
-			'vectorization_description': Vectorization.get(ml_model.vectorization_type).description,
+			'vectorization_description': str(Vectorization.get(ml_model.vectorization_type).description),
 			'max_words': ml_model.max_words,
 			'used_default_stop_words': ml_model.use_default_stop_words
 		}
@@ -164,11 +164,10 @@ class MlModelSaver:
 		filename = os.path.join(self.models_dir, self.model_owner_username, self.model_title, MODEL_INFO_FILENAME)
 		self.verify_path(filename)
 
-		with open(filename, 'w') as outfile:
-			yaml.dump(model_info, outfile, default_flow_style=False)
+		with open(filename, 'w', encoding='utf-8') as outfile:
+			yaml.dump(model_info, outfile, default_flow_style=False, allow_unicode=True)
 
 		print('Model info saved in:', MODEL_INFO_FILENAME)
-
 
 # def save_sample_in_file(filename, data, delim='\n\n'):
 # 	""" Сохранение обучающего вектора в файл """
