@@ -35,7 +35,8 @@ def create_app():
 	from src.app.ext.celery.make_celery import celery_init_app
 	celery_init_app(app)
 
-	from .commands.commands import init_db_command
+	from .commands.commands import init_db_command, fill_db_command
 	app.cli.add_command(init_db_command)
+	app.cli.add_command(fill_db_command)
 
 	return app
