@@ -43,6 +43,8 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	print('PREPROCESSED')
 	print(df['preprocessed'][:4])
 
+	word_to_index, index_to_word = None, None # инициализация для последующего сохранения
+
 	if vectorization_type == 'bag-of-words':
 		words = Counter()
 		for txt in df['preprocessed']:
@@ -128,6 +130,9 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	ml_model_saver.save_stop_words(stop_words, use_default_stop_words)
 	# Сохранение датафрейма в файл
 	ml_model_saver.save_dataframe(df)
+	if vectorization_type == 'bag-of-words':
+		# сохранение преобразования слов в коды
+		ml_model_saver.save_bag_of_words_dictionaries(word_to_index, index_to_word)
 
 	def save_sample_in_file(filename,data, delim='\n\n'):
 		os.makedirs(os.path.dirname(filename), exist_ok=True)

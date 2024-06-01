@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 import nltk
@@ -168,6 +169,25 @@ class MlModelSaver:
 			yaml.dump(model_info, outfile, default_flow_style=False, allow_unicode=True)
 
 		print('Model info saved in:', MODEL_INFO_FILENAME)
+
+	def save_bag_of_words_dictionaries(self, word_to_index, index_to_word):
+		""" Сохранение словарей для преобразований в файл (для алгоритма мешок слов) """
+
+		WORD_TO_INDEX_FILENAME = 'word_to_index.json'
+		INDEX_TO_WORD_FILENAME = 'index_to_word.json'
+
+		filename1 = os.path.join(self.models_dir, self.model_owner_username, self.model_title, WORD_TO_INDEX_FILENAME)
+		filename2 = os.path.join(self.models_dir, self.model_owner_username, self.model_title, INDEX_TO_WORD_FILENAME)
+
+		for filename, json_data in ((filename1, word_to_index), (filename2, index_to_word)):
+			self.verify_path(filename)
+
+			with open(filename, 'w', encoding='utf-8') as f:
+				json.dump(json_data, f, ensure_ascii=False, indent=4)
+
+			print('One of dictionaries saved in', filename)
+
+
 
 # def save_sample_in_file(filename, data, delim='\n\n'):
 # 	""" Сохранение обучающего вектора в файл """
