@@ -1,5 +1,5 @@
-from parsers.utilities.utils import get_json_from_file
-from parsers.wb_parser.stats.utils import (
+from src.app.parsers.utilities.utils import get_json_from_file
+from src.app.parsers.wb_parser.stats.utils import (
 	get_frequently_encountered_words,
 	group_by_feedback_value
 )
