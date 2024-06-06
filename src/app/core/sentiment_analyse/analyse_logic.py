@@ -1,8 +1,10 @@
 from http import HTTPStatus
-from flask import abort
+import os
+import pickle
+from flask import abort, current_app
 from .tokenize_text import process_text_tokenization
 from .vectorize_text import process_convert_tokens_in_seq_of_codes, vectorize_sequences, vectorize_text
-from . import simple_vpm, embedding_vpm
+# from . import simple_vpm, embedding_vpm
 import numpy as np
 
 def embeddings_predict(text, model, proba=False):
@@ -32,10 +34,22 @@ def predict(text: str, model, proba=False):
 
 
 def process_analyse_text(model_type: str, text: str):
+
+
 	if model_type == 'bag-of-words':
+		simple_vmp_filename = os.path.join(current_app.config['PRETRAINED_MODELS'],
+										   'SIMPLE_VECTORIZATION_PRETRAINED_MODEL.pkl')
+		with open(simple_vmp_filename, 'rb') as f:
+			simple_vpm = pickle.load(f)
+
 		model = simple_vpm
 		prediction = predict(text, model, proba=True)[0]
 	elif model_type == 'embeddings':
+		embedding_vpm_filename = os.path.join(current_app.config['PRETRAINED_MODELS'],
+										   'EMBEDDINGS_PRETRAINED_MODEL.pkl')
+		with open(embedding_vpm_filename, 'rb') as f:
+			embedding_vpm = pickle.load(f)
+
 		model = embedding_vpm
 		prediction = embeddings_predict(text, model, proba=True)[0]
 

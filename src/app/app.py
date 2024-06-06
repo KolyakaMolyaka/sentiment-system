@@ -1,4 +1,5 @@
 from flask import Flask
+import os
 
 
 def create_app():
@@ -9,6 +10,17 @@ def create_app():
 	from dotenv import load_dotenv
 	load_dotenv()
 	app.config.from_prefixed_env()
+
+
+	""" Upload folder """
+	UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+	app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+	app.config['PRETRAINED_MODELS'] = os.path.join(UPLOAD_FOLDER, 'pretrained_models')
+	app.config['TRAINED_MODELS'] = os.path.join(UPLOAD_FOLDER, 'models')
+
+	os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+	os.makedirs(app.config['TRAINED_MODELS'], exist_ok=True)
+	os.makedirs(app.config['PRETRAINED_MODELS'], exist_ok=True)
 
 	"""Extensions"""
 

@@ -1,3 +1,5 @@
+import os.path
+
 import nltk
 import wget
 import click
@@ -27,8 +29,12 @@ def download_nltk_data_command():
 @with_appcontext
 def download_navec_data_command():
 	url = 'https://storage.yandexcloud.net/natasha-navec/packs/navec_hudlit_v1_12B_500K_300d_100q.tar'
-	filename = wget.download(url)
-	click.echo(f'Navec data downloaded in {filename}')
+	navec_filename = 'navec_hudlit_v1_12B_500K_300d_100q.tar'
+	if not os.path.exists(navec_filename):
+		filename = wget.download(url)
+		click.echo(f'Navec data downloaded in {filename}')
+	else:
+		click.echo(f'Navec is already downloaded in {navec_filename}')
 
 
 @click.command('fill-db')
