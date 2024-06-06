@@ -40,6 +40,22 @@ ns = Namespace(
 #
 # 		return response
 
+@ns.route('/wildberries_menu')
+class CreateWildberriesMenu(Resource):
+	@ns.response(int(HTTPStatus.OK), 'Список категорий и подкатегорий')
+	@ns.doc(description='Получение списка категорий и подкатегорий для создания датасета')
+	def post(self):
+		""" Получение списка меню сайта Wildberries """
+
+		from src.app.parsers.wb_parser.entities.wbmenu import WbMenu
+		wb_menu = WbMenu()
+		menu = wb_menu.get_menu()
+		response = jsonify({
+			'menu': menu
+		})
+		response.status_code = HTTPStatus.OK
+		return response
+
 
 @ns.route('/wildberries')
 class CreateWildberriesDataset(Resource):
