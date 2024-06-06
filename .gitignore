@@ -3,3 +3,6 @@ venv*
 *.pyc
 .idea*
 navec_*
+*.zip
+*.rar
+*.json

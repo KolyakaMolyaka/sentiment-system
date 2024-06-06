@@ -11,10 +11,9 @@ async def main(category_name: str, subcategory_name: str, pages=10):
 	sc = cat.get_subcategory(subcategory_name)
 	async with aiohttp.ClientSession() as session:
 		feedbacks = await CategoryParser.parse(sc, session, pages=pages)
-		result_filename = category_name + '_' + subcategory_name
 
-	# save_json_to_file([f for f in feedbacks], result_filename)
 	return feedbacks
+
 
 
 if __name__ == '__main__':
