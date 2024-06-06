@@ -85,6 +85,7 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		# создание мешка слов
 		x_train = vectorize_sequences(x_train_seq, max_words)
 		x_test = vectorize_sequences(x_test_seq, max_words)
+		df['vectors'] = df.apply(lambda row: vectorize_sequences([row['sequences']], max_words)[0], axis=1)
 
 	else:
 		x_train = np.array(train['sequences'].tolist()).reshape(len(train), 300 * 100)
