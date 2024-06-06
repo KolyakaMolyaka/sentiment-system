@@ -1,8 +1,10 @@
-import os.path
 from http import HTTPStatus
-from flask import jsonify, send_file
+from flask import jsonify, send_file, send_from_directory
 from flask_restx import Resource, Namespace
 from celery.result import AsyncResult
+
+import tempfile
+import json
 
 ns = Namespace(
 	name='Get Dataset Result Controller',
@@ -80,36 +82,20 @@ class GetWildberriesDataset(Resource):
 			return response
 
 		###### Отправка архива, если датасет готов #### #### ######
-
+		""" Рабочий вариант
 		response = jsonify({
 				# "successful": result.successful(),
 				# "value": result.result if result.ready() else None,
-				"feedbacks": result.result[:10],
+				"feedbacks": result.result[:100],
 			})
 		response.status_code = HTTPStatus.OK
 		return response
+		"""
 
-
-
-		import tempfile
-		import json
-		import shutil
 		feedbacks = result.result
 
 		# Создаем временный файл для сохранения JSON данных словаря
-		# with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8') as temp_file:
-		filename = os.path.join(os.path.curdir[:-2], 'dataset.json')
-		with open(filename, 'w', encoding='utf-8') as temp_file:
-			json.dump(feedbacks, temp_file,
-					  ensure_ascii=False)  # Указываем ensure_ascii=False для сохранения кириллических символов корректно
-
-
-			# Удаляем данные из БД Redis
-			# result.forget()
-
-			# Отправляем файл пользователю
-			# filename = os.path.join(tempfile.gettempdir(), temp_file.name)
-		print(filename)
-		return send_file(filename, mimetype='application/json', as_attachment=True, download_name='dataset.json')
-
-
+		with tempfile.NamedTemporaryFile(mode='w', delete=True, encoding='utf-8') as temp_file:
+			json.dump(feedbacks, temp_file, ensure_ascii=False)
+			result.forget()
+			return send_file(temp_file.name, mimetype='application/octet-stream', as_attachment=True, download_name='dataset.json')

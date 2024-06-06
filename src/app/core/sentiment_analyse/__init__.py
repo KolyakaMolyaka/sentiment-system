@@ -2,6 +2,7 @@ import nltk
 
 nltk.download('punkt')
 nltk.download('stopwords')
+RUSSIAN_DEFAULT_STOP_WORDS = nltk.corpus.stopwords.words('russian')
 
 from navec import Navec
 import wget
