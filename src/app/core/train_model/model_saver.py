@@ -12,18 +12,18 @@ from src.app.ext.database.models import MlModel, Tokenizer, Vectorization
 
 
 class MlModelSaver:
-	def __init__(self, dir_path, model_owner_username, model_title, models_dir='models'):
+	def __init__(self, save_dir, model_owner_username, model_title):
 
 		self.metrics = None
 
-		self.models_dir = os.path.join(dir_path, models_dir)
+		self.save_dir = save_dir
 		self.model_owner_username = model_owner_username
 		self.model_title = model_title
 
 	def save_model(self, model):
 		""" Сериализация обученной модели в файл. model for ex. = LogisticRegression """
 		MODEL_FILENAME = 'model.pkl'
-		filename = os.path.join(self.models_dir, self.model_owner_username, self.model_title, MODEL_FILENAME)
+		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, MODEL_FILENAME)
 		self.verify_path(filename)
 		with open(filename, 'wb') as f:
 			pickle.dump(model, f)
@@ -44,7 +44,7 @@ class MlModelSaver:
 		fpr, tpr, threshold = roc_curve(y_test, preds)
 		roc_auc = auc(fpr, tpr)
 
-		filename = os.path.join(self.models_dir, self.model_owner_username, self.model_title, ROC_CURVE_FILENAME)
+		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, ROC_CURVE_FILENAME)
 		self.verify_path(filename)
 		f = plt.figure()
 		f.clear()
@@ -67,7 +67,7 @@ class MlModelSaver:
 		""" Сохранение обучающего датасета в файл """
 
 		DATASET_FILENAME = 'comments_and_classes.csv'
-		filename = os.path.join(self.models_dir, self.model_owner_username, self.model_title, DATASET_FILENAME)
+		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, DATASET_FILENAME)
 		self.verify_path(filename)
 
 		# fieldnames = ['Текст комментария', 'Выделенные токены', 'Бинарная оценка тональности']
@@ -80,7 +80,7 @@ class MlModelSaver:
 		""" Сохранение стоп-слов в файл """
 
 		STOP_WORDS_FILENAME = 'stop_words.csv'
-		filename = os.path.join(self.models_dir, self.model_owner_username, self.model_title, STOP_WORDS_FILENAME)
+		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, STOP_WORDS_FILENAME)
 		self.verify_path(filename)
 
 		default_stop_words = set()
@@ -101,7 +101,7 @@ class MlModelSaver:
 		""" Сохранение датафрейма в файл """
 
 		DF_FILENAME = 'handled_data.xlsx'
-		filename = os.path.join(self.models_dir, self.model_owner_username, self.model_title, DF_FILENAME)
+		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, DF_FILENAME)
 		self.verify_path(filename)
 
 		df.to_excel(filename, index=True)
@@ -162,7 +162,7 @@ class MlModelSaver:
 			'used_default_stop_words': ml_model.use_default_stop_words
 		}
 
-		filename = os.path.join(self.models_dir, self.model_owner_username, self.model_title, MODEL_INFO_FILENAME)
+		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, MODEL_INFO_FILENAME)
 		self.verify_path(filename)
 
 		with open(filename, 'w', encoding='utf-8') as outfile:
@@ -176,8 +176,8 @@ class MlModelSaver:
 		WORD_TO_INDEX_FILENAME = 'word_to_index.json'
 		INDEX_TO_WORD_FILENAME = 'index_to_word.json'
 
-		filename1 = os.path.join(self.models_dir, self.model_owner_username, self.model_title, WORD_TO_INDEX_FILENAME)
-		filename2 = os.path.join(self.models_dir, self.model_owner_username, self.model_title, INDEX_TO_WORD_FILENAME)
+		filename1 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, WORD_TO_INDEX_FILENAME)
+		filename2 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, INDEX_TO_WORD_FILENAME)
 
 		for filename, json_data in ((filename1, word_to_index), (filename2, index_to_word)):
 			self.verify_path(filename)

@@ -1,4 +1,4 @@
-from flask import abort, request
+from flask import abort, request, current_app
 from http import HTTPStatus
 from celery import shared_task
 from collections import Counter
@@ -111,12 +111,14 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	# сохранение модели в папке пользователя
 
 	import os
-	modelsdir_path = '/models'
-	dir_path = os.path.dirname(os.path.realpath(__file__))
+	# modelsdir_path = '/models'
+	# dir_path = os.path.dirname(os.path.realpath(__file__))
 	username = request.authorization.username
 
-	MlModelSaver.verify_path(os.path.join('models', username, model_title)) # ОБЯЗАТЕЛЬНО УБЕДИТЬСЯ
-	ml_model_saver = MlModelSaver(dir_path, username, model_title)
+	save_dir = current_app.config['TRAINED_MODELS']
+	MlModelSaver.verify_path(os.path.join(save_dir, username, model_title)) # ОБЯЗАТЕЛЬНО УБЕДИТЬСЯ
+
+	ml_model_saver = MlModelSaver(save_dir, username, model_title)
 
 	# Сохранение модели в файл
 	ml_model_saver.save_model(lr)

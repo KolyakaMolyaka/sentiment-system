@@ -1,0 +1,21 @@
+classifier: logistic-regression
+max_words: 400
+metrics:
+  accuracy: 0.98
+  confusion_matrix:
+  - - 88
+    - 0
+  - - 2
+    - 10
+  precision: 0.9777777777777777
+  recall: 1.0
+model_title: my_model2
+tokenizer_description: Токенизатор доступен благодаря библиотеке NLTK и функции nltk.tokenize.word_tokenize(),
+  с помощью которой получаются токены. Функция возвращает слоги из одного слова, а
+  одно слово может содержать один или больше слогов.
+tokenizer_type: nltk-tokenizer
+used_default_stop_words: true
+vectorization_description: Векторизация текста при помощи плотного векторного представления.
+  Каждому токену соответствует вектор фиксированной длины. Элементами вектора могут
+  быть любые действительные числа. Реализуется при помощи библиотеки Navec.
+vectorization_type: embeddings

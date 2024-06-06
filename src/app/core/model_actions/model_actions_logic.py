@@ -1,7 +1,8 @@
+import os
 import pickle
 import csv
 from src.app.ext.database.models import MlModel, User
-from flask import request, abort
+from flask import request, abort, current_app
 from http import HTTPStatus
 
 
@@ -14,14 +15,9 @@ def process_model_delete_request(model_title):
 	# delete model from db
 	MlModel.delete_model(model_title)
 	# delete model folder
-	# check train_model_logic.py for modelsdir_path
 	import shutil
 	username = request.authorization.username
-	dir_path = '/usr/src/app/src/app/core/train_model'
-	modelsdir_path = '/models'
-	# import os
-	# os.path.join('..', 'train_model', 'models', username, model_title)
-	directory = dir_path + rf'{modelsdir_path}/{username}/{model_title}/'
+	directory = os.path.join(current_app.config['TRAINED_MODELS'], username, model_title)
 	shutil.rmtree(directory)
 
 
@@ -32,13 +28,14 @@ def process_model_prediction_request(model_title, text, proba=True):
 		abort(int(HTTPStatus.NOT_FOUND), f'модель {model_title} не найдена')
 
 	# load model
-	filename = f'/usr/src/app/src/app/core/train_model/models/{user.username}/{model_title}/model.pkl'
+	# filename = f'/usr/src/app/src/app/core/train_model/models/{user.username}/{model_title}/model.pkl'
+	filename = os.path.join(current_app.config['TRAINED_MODELS'], user.username, model_title, 'model.pkl')
 	with open(filename, 'rb') as f:
 		ml_model = pickle.load(f)
 		print(ml_model)
 
-	filename = f'/usr/src/app/src/app/core/train_model/models/{user.username}/{model_title}/stop_words.csv'
-
+	# filename = f'/usr/src/app/src/app/core/train_model/models/{user.username}/{model_title}/stop_words.csv'
+	filename = os.path.join(current_app.config['TRAINED_MODELS'], user.username, model_title, 'stop_words.csv')
 	stop_words = []
 	with open(filename) as csvfile:
 		csvreader = csv.reader(csvfile, delimiter=';')
