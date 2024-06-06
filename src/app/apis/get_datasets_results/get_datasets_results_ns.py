@@ -72,25 +72,12 @@ class GetWildberriesDataset(Resource):
 			return response
 
 		# Handle successful state
-		if not result.ready():
+		if not result.ready() and not result.successful():
 			response = jsonify({
-				# "successful": result.successful(),
-				# "value": result.result if result.ready() else None,
-				"message": 'Создание датасета находится в обработке.',
+				"message": 'Датасет ещё не готов или уже был получен.',
 			})
 			response.status_code = HTTPStatus.OK
 			return response
-
-		###### Отправка архива, если датасет готов #### #### ######
-		""" Рабочий вариант
-		response = jsonify({
-				# "successful": result.successful(),
-				# "value": result.result if result.ready() else None,
-				"feedbacks": result.result[:100],
-			})
-		response.status_code = HTTPStatus.OK
-		return response
-		"""
 
 		feedbacks = result.result
 
@@ -98,4 +85,5 @@ class GetWildberriesDataset(Resource):
 		with tempfile.NamedTemporaryFile(mode='w', delete=True, encoding='utf-8') as temp_file:
 			json.dump(feedbacks, temp_file, ensure_ascii=False)
 			result.forget()
+			setattr(result, 'was_called_already', True)
 			return send_file(temp_file.name, mimetype='application/octet-stream', as_attachment=True, download_name='dataset.json')
