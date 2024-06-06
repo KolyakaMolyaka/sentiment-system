@@ -1,19 +1,19 @@
 classifier: logistic-regression
 max_words: 20
 metrics:
-  accuracy: 0.88
+  accuracy: 0.87
   confusion_matrix:
-  - - 88
-    - 0
+  - - 87
+    - 1
   - - 12
     - 0
-  precision: 0.88
-  recall: 1.0
-model_title: my_model2
-tokenizer_description: Токенизатор доступен благодаря библиотеке NLTK и функции nltk.tokenize.word_tokenize(),
-  с помощью которой получаются токены. Функция возвращает слоги из одного слова, а
-  одно слово может содержать один или больше слогов.
-tokenizer_type: nltk-tokenizer
+  precision: 0.8787878787878788
+  recall: 0.9886363636363636
+model_title: my_model3
+tokenizer_description: Токенизатор реализуется функцией split в Python применённой
+  к строке с текстом. Это означает, что токены выделяются путём разделения строки
+  пробельным символом.
+tokenizer_type: default-whitespace-tokenizer
 used_default_stop_words: true
 vectorization_description: Векторизация текста при помощи алгоритма "Мешок слов".
   Вектор содержит столько элементов, сколько анализируемых слов. Каждый элемент вектора

@@ -7,7 +7,7 @@ train_model = Model('TrainInfo', {
 								enum=('logistic-regression',)
 								),
 	'tokenizerType': fields.String(required=True,
-								   enum=('nltk-tokenizer', 'default-whitespace-tokenizer'),
+								   enum=('nltk-tokenizer', 'default-whitespace-tokenizer', 'wordpunct-tokenizer'),
 								   example='nltk-tokenizer'),
 	'vectorizationType': fields.String(required=True,
 									   enum=('bag-of-words', 'embeddings'),

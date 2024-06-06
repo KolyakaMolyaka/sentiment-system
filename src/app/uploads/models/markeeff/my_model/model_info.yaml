@@ -1,5 +1,5 @@
 classifier: logistic-regression
-max_words: 20
+max_words: 400
 metrics:
   accuracy: 0.88
   confusion_matrix:
@@ -9,7 +9,7 @@ metrics:
     - 0
   precision: 0.88
   recall: 1.0
-model_title: my_model2
+model_title: my_model
 tokenizer_description: Токенизатор доступен благодаря библиотеке NLTK и функции nltk.tokenize.word_tokenize(),
   с помощью которой получаются токены. Функция возвращает слоги из одного слова, а
   одно слово может содержать один или больше слогов.

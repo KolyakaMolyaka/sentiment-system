@@ -28,21 +28,16 @@ def process_model_prediction_request(model_title, text, proba=True):
 		abort(int(HTTPStatus.NOT_FOUND), f'модель {model_title} не найдена')
 
 	# load model
-	# filename = f'/usr/src/app/src/app/core/train_model/models/{user.username}/{model_title}/model.pkl'
 	filename = os.path.join(current_app.config['TRAINED_MODELS'], user.username, model_title, 'model.pkl')
 	with open(filename, 'rb') as f:
 		ml_model = pickle.load(f)
-		print(ml_model)
 
-	# filename = f'/usr/src/app/src/app/core/train_model/models/{user.username}/{model_title}/stop_words.csv'
 	filename = os.path.join(current_app.config['TRAINED_MODELS'], user.username, model_title, 'stop_words.csv')
 	stop_words = []
 	with open(filename) as csvfile:
 		csvreader = csv.reader(csvfile, delimiter=';')
 		for row in csvreader:  # формат следующий: ['row']
 			stop_words.extend(row)
-
-	print('User used stop words after csv reading:', stop_words)
 
 	if model.vectorization_type == 'embeddings':
 		from src.app.core.sentiment_analyse.tokenize_text import process_text_tokenization

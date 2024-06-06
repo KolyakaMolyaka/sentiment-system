@@ -1,10 +1,8 @@
-from http import HTTPStatus
 import os
 import pickle
 from flask import abort, current_app
 from .tokenize_text import process_text_tokenization
 from .vectorize_text import process_convert_tokens_in_seq_of_codes, vectorize_sequences, vectorize_text
-# from . import simple_vpm, embedding_vpm
 import numpy as np
 
 def embeddings_predict(text, model, proba=False):
