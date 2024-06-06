@@ -20,7 +20,9 @@ def vectorize_text(txt: list[str], max_review_len: int):
 	@param: navec:Navec модель сопоставления слова к вектору
 	@param: max_review_len:int максимальная длина вектора
 	"""
-	from . import navec
+	from navec import Navec
+	navec_filename = 'navec_hudlit_v1_12B_500K_300d_100q.tar'
+	navec = Navec.load(navec_filename)
 
 	unk = navec['<unk>']
 	text_embeddings = []

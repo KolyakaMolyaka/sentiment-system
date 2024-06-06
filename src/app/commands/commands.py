@@ -1,4 +1,5 @@
-# команда создания БД
+import nltk
+import wget
 import click
 from flask.cli import with_appcontext
 from src.app.ext.database import db
@@ -12,6 +13,22 @@ def init_db_command():
 	db.create_all()
 	db.session.commit()
 	click.echo('Database initialized.')
+
+
+@click.command('download-nltk-data')
+@with_appcontext
+def download_nltk_data_command():
+	nltk.download('punkt')
+	nltk.download('stopwords')
+	click.echo('NLTK punkt and stopwords data are downloaded.')
+
+
+@click.command('download-navec-data')
+@with_appcontext
+def download_navec_data_command():
+	url = 'https://storage.yandexcloud.net/natasha-navec/packs/navec_hudlit_v1_12B_500K_300d_100q.tar'
+	filename = wget.download(url)
+	click.echo(f'Navec data downloaded in {filename}')
 
 
 @click.command('fill-db')
@@ -41,7 +58,6 @@ def fill_db_command():
 					'Функция возвращает токены путём разбиения текста по пробелам и с учетом знаков препинания.',
 	)
 	word_punck_tokenizer.save()
-
 
 	# Информация о методах векторизации
 	bag_of_words_alg = Vectorization(
