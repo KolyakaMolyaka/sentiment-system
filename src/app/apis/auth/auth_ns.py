@@ -15,29 +15,10 @@ ns = Namespace(
 )
 
 
-# @ns.route('/logout')
-# class LogoutAPI(Resource):
-# 	method_decorators = [requires_auth]
-#
-# 	@ns.response(int(HTTPStatus.OK), 'Пользователь вышел из аккаунта.')
-# 	@ns.response(int(HTTPStatus.UNAUTHORIZED), 'Пользователь не авторизован.')
-# 	@ns.doc(security='basicAuth')
-# 	def post(self):
-# 		return {'message': 'Вы вышли из аккаунта!'}
-
-
-# @ns.route('/login')
-# class LoginAPI(Resource):
-# 	@ns.expect(auth_from_form_reqparser)
-# 	def post(self):
-# 		form_data = auth_from_form_reqparser.parse_args()
-# 		process_login_from_form(**form_data)
-#
-# 		return form_data
-
 @ns.route('/check_auth')
 class CheckAuth(Resource):
 	method_decorators = [requires_auth]
+
 	@ns.response(int(HTTPStatus.OK), 'Пользователь авторизован')
 	@ns.response(int(HTTPStatus.UNAUTHORIZED), 'Пользователь не авторизован.')
 	@ns.doc(security='basicAuth')
@@ -49,7 +30,6 @@ class CheckAuth(Resource):
 		response = jsonify({'статус': 'ok'})
 		response.status_code = HTTPStatus.OK
 		return response
-
 
 
 @ns.route('/register')
