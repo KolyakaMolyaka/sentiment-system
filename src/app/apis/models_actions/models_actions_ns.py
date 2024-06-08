@@ -8,10 +8,6 @@ from .dto import user_ml_model, user_prediction_model
 from src.app.ext.database.models import MlModel, User
 from src.app.core.auth.auth_logic import requires_auth
 from src.app.core.model_actions.model_actions_logic import process_model_delete_request, process_model_prediction_request
-# from src.app.core.sentiment_analyse.tokenize_text import (
-# 	process_text_tokenization
-# )
-from ..utilities import utils
 
 ns = Namespace(
 	name='Models Actions Controller',
