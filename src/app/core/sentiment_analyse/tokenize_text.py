@@ -12,7 +12,8 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 							  morph=None,
 							  use_default_stop_words=True,
 							  min_token_len=1,
-							  delete_numbers_flag=False
+							  delete_numbers_flag=False,
+							  excluded_default_stop_words: list =None
 							  ) -> tuple[list[str], list[str]]:
 	"""
 	Вход:
@@ -30,6 +31,7 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 	Выход:
 		- список с обработанными токенами.
 	"""
+
 	PUNCTUATION_MARKS = list('!?,.:;-()') + ['..'] + ['...']
 	RUSSIAN_DEFAULT_STOP_WORDS = process_get_default_stop_words()
 
@@ -38,6 +40,13 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 
 	if not punctuation_marks:
 		punctuation_marks = PUNCTUATION_MARKS
+
+	if not excluded_default_stop_words:
+		excluded_default_stop_words = set()
+	else:
+		excluded_default_stop_words = set(
+			list(map(str.lower, excluded_default_stop_words))
+		)
 
 	if use_default_stop_words:
 		default_stop_words = set(RUSSIAN_DEFAULT_STOP_WORDS)
@@ -48,6 +57,9 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 		stop_words = set(stop_words).union(default_stop_words)
 	else:
 		stop_words = default_stop_words
+
+	if excluded_default_stop_words:
+		stop_words -= excluded_default_stop_words
 
 	text = text.lower()
 	if tokenizer_type == 'nltk-tokenizer':
