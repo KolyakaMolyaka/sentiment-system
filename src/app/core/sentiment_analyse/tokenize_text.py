@@ -7,7 +7,9 @@ from http import HTTPStatus
 def process_text_tokenization(tokenizer_type: str, text: str,
 							  punctuation_marks=None, stop_words=None,
 							  morph=None,
-							  use_default_stop_words=True
+							  use_default_stop_words=True,
+							  min_token_len=1,
+							  delete_numbers_flag=False
 							  ) -> tuple[list[str], list[str]]:
 	"""
 	Вход:
@@ -25,13 +27,15 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 	Выход:
 		- список с обработанными токенами.
 	"""
+	PUNCTUATION_MARKS = list('!?,.:;-()') + ['..'] + ['...']
+	RUSSIAN_DEFAULT_STOP_WORDS = nltk.corpus.stopwords.words('russian')
+
 	if not morph:
 		morph = pymorphy2.MorphAnalyzer()
 
 	if not punctuation_marks:
-		punctuation_marks = list('!?,.:-()') + ['..'] + ['...']
+		punctuation_marks = PUNCTUATION_MARKS
 
-	RUSSIAN_DEFAULT_STOP_WORDS = nltk.corpus.stopwords.words('russian')
 	if use_default_stop_words:
 		default_stop_words = set(RUSSIAN_DEFAULT_STOP_WORDS)
 	else:
@@ -53,15 +57,18 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 		# default nltk-tokenizer
 		tokens = nltk.tokenize.word_tokenize(text)
 
-	preprocessed_text = []
+	preprocessed_text = set()
 	for t in tokens:
 		if t in punctuation_marks: continue
 		if t in stop_words: continue
+		if not (len(t) > min_token_len): continue
+		if delete_numbers_flag and t.isdigit(): continue
 
 		lemma = morph.parse(t)[0].normal_form
 		if lemma not in stop_words:
-			preprocessed_text.append(lemma)
+			preprocessed_text.add(lemma)
 
+	preprocessed_text = list(preprocessed_text) # нормализация данных
 	return preprocessed_text, stop_words
 
 

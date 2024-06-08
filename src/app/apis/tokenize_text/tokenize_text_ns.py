@@ -58,13 +58,17 @@ class TokenizeTextAPI(Resource):
 		use_default_stop_words = d.get('useDefaultStopWords')
 		stop_words = d.get('stopWords')
 		tokenizer_type = d.get('tokenizerType')
+		min_token_len = d.get('minTokenLength')
+		delete_numbers_flag = d.get('deleteNumbers')
 
 		# get tokens with used stop words
 		tokens, used_stop_words = process_text_tokenization(
 			tokenizer_type,
 			text,
 			stop_words=stop_words,
-			use_default_stop_words=use_default_stop_words
+			use_default_stop_words=use_default_stop_words,
+			min_token_len=min_token_len,
+			delete_numbers_flag=delete_numbers_flag
 		)
 
 		# return tokens with used stop words
