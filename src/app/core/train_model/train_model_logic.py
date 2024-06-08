@@ -39,29 +39,6 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	train_alg.preprocess_text(df, tokenizer_type, stop_words, use_default_stop_words)
 	train_alg.create_sequences(df, max_words)
 
-	# if vectorization_type == 'bag-of-words':
-		# from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens_in_seq_of_codes
-		# tokens = []
-		# for row in df['preprocessed'].tolist():
-		# 	tokens.extend(row)
-		#
-		# seq, word_to_index, index_to_word = process_convert_tokens_in_seq_of_codes(tokens, max_words)
-		# df['sequences'] = df.apply(lambda row:
-		# 						   [word_to_index.get(word, 0) for word in row['preprocessed']]
-		# 					   , axis=1)
-		# print('SEQUENCES')
-		# print(df['sequences'][:4])
-		# print('END SEQUENCES')
-		# pass
-
-	# elif vectorization_type == 'embeddings':
-	#
-	# 	df['sequences'] = df.apply(lambda row:
-	# 							   vectorize_text(row['preprocessed'], 100)
-	# 							   , axis=1)
-	# else:
-	# 	abort(int(HTTPStatus.BAD_REQUEST, 'Неправильный тип векторизации'))
-
 	train, test = train_test_split(df, test_size=.2)
 
 	# данные для обучения
