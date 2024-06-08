@@ -87,10 +87,6 @@ class TrainBagOfWordAlgorithm(TrainTemplate):
 		df['sequences'] = df.apply(lambda row:
 								   [word_to_index.get(word, 0) for word in row['preprocessed']]
 								   , axis=1)
-		print('SEQUENCES')
-		print(df['sequences'][:4])
-		print('END SEQUENCES')
-
 		return [word_to_index, index_to_word]
 
 	def create_train_and_test_samples(self, df, max_words):
