@@ -3,7 +3,6 @@ import pymorphy2
 from src.app.ext.database.models import Tokenizer
 from flask import abort
 from http import HTTPStatus
-from . import RUSSIAN_DEFAULT_STOP_WORDS
 
 def process_text_tokenization(tokenizer_type: str, text: str,
 							  punctuation_marks=None, stop_words=None,
@@ -32,6 +31,7 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 	if not punctuation_marks:
 		punctuation_marks = list('!?,.:-()') + ['..'] + ['...']
 
+	RUSSIAN_DEFAULT_STOP_WORDS = nltk.corpus.stopwords.words('russian')
 	if use_default_stop_words:
 		default_stop_words = set(RUSSIAN_DEFAULT_STOP_WORDS)
 	else:

@@ -1,5 +1,4 @@
 import os.path
-
 import nltk
 import wget
 import click
@@ -18,7 +17,6 @@ def init_db_command():
 
 
 @click.command('download-nltk-data')
-@with_appcontext
 def download_nltk_data_command():
 	nltk.download('punkt')
 	nltk.download('stopwords')
@@ -26,7 +24,6 @@ def download_nltk_data_command():
 
 
 @click.command('download-navec-data')
-@with_appcontext
 def download_navec_data_command():
 	url = 'https://storage.yandexcloud.net/natasha-navec/packs/navec_hudlit_v1_12B_500K_300d_100q.tar'
 	navec_filename = 'navec_hudlit_v1_12B_500K_300d_100q.tar'
