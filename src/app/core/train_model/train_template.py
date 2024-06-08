@@ -1,12 +1,28 @@
 from abc import ABC, abstractmethod
+from sklearn.model_selection import train_test_split
+import numpy as np
+from flask import abort
+from http import HTTPStatus
+from sklearn.linear_model import LogisticRegression
+import numpy as np
 
 from src.app.core.sentiment_analyse.tokenize_text import process_text_tokenization
 
 from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens_in_seq_of_codes
 
-from src.app.core.sentiment_analyse.vectorize_text import vectorize_text
+from src.app.core.sentiment_analyse.vectorize_text import vectorize_text, vectorize_sequences
+
 
 class TrainTemplate(ABC):
+
+	@classmethod
+	def get_trained_model_with_samples(cls, train_alg, df, tokenizer_type, stop_words, use_default_stop_words, max_words, classifier):
+		""" Шаги выполнения алгоритма с train_alg: TrainTemplate """
+		train_alg.preprocess_text(df, tokenizer_type, stop_words, use_default_stop_words)
+		train_alg.create_sequences(df, max_words)
+		x_train, y_train, x_test, y_test = train_alg.create_train_and_test_samples(df, max_words)
+		trained_model = train_alg.train(classifier, x_train, y_train)
+		return trained_model, x_train, y_train, x_test, y_test
 
 	def preprocess_text(self, df, tokenizer_type, stop_words, use_default_stop_words):
 		""" Токенизация текста """
@@ -23,6 +39,23 @@ class TrainTemplate(ABC):
 	def create_sequences(self, df, max_words):
 		pass
 
+	def train_test_split(self, df, test_size=.2):
+		# Получение обучающей и тестовой выборок 80/20 %
+		train, test = train_test_split(df, test_size=.2)
+		return train, test
+
+	@abstractmethod
+	def create_train_and_test_samples(self, df):
+		pass
+
+	def train(self, classifier, x_train, y_train, random_state=42, max_iter=500):
+		if classifier == 'logistic-regression':
+			lr = LogisticRegression(random_state=random_state, max_iter=max_iter)
+			lr.fit(x_train, y_train)
+			return lr
+		else:
+			abort(int(HTTPStatus.CONFLICT), 'Неизвестное значение параметра classifier')
+
 
 class TrainBagOfWordAlgorithm(TrainTemplate):
 	def create_sequences(self, df, max_words):
@@ -38,11 +71,24 @@ class TrainBagOfWordAlgorithm(TrainTemplate):
 		print(df['sequences'][:4])
 		print('END SEQUENCES')
 
+	def create_train_and_test_samples(self, df, max_words):
+		train, test = self.train_test_split(df)
+		y_train, y_test = train['score'], test['score']
+		x_train = vectorize_sequences(train['sequences'], max_words)
+		x_test = vectorize_sequences(test['sequences'], max_words)
+		df['vectors'] = df.apply(lambda row: vectorize_sequences([row['sequences']], max_words)[0], axis=1)
+		return x_train, y_train, x_test, y_test
+
 
 class TrainEmbeddingsAlgorithm(TrainTemplate):
 	def create_sequences(self, df, max_words):
-
 		df['sequences'] = df.apply(lambda row:
 								   vectorize_text(row['preprocessed'], 100)
 								   , axis=1)
-		pass
+
+	def create_train_and_test_samples(self, df, max_words):
+		train, test = self.train_test_split(df)
+		y_train, y_test = train['score'], test['score']
+		x_train = np.array(train['sequences'].tolist()).reshape(len(train), 300 * 100)
+		x_test = np.array(test['sequences'].tolist()).reshape(len(test), 300 * 100)
+		return x_train, y_train, x_test, y_test
