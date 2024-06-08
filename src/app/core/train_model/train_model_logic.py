@@ -21,8 +21,8 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		abort(int(HTTPStatus.CONFLICT),
 			  f'Модель с названием {model_title} уже существует. Сперва удалите её. Или придумайте новое название.')
 
-	word_to_index, index_to_word = None, None  # инициализация для последующего сохранения
 
+	# Использование паттерна Шаблонный метод для выбора алгоритма обучения модели
 	if vectorization_type == 'bag-of-words':
 		train_alg = TrainBagOfWordAlgorithm()
 	elif vectorization_type == 'embeddings':
@@ -34,7 +34,9 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		x_train, \
 		y_train, \
 		x_test, \
-		y_test = TrainTemplate.get_trained_model_with_samples(train_alg, df, tokenizer_type, stop_words,
+		y_test, \
+		word_to_index, \
+		index_to_word = TrainTemplate.get_trained_model_with_samples(train_alg, df, tokenizer_type, stop_words,
 															  use_default_stop_words, max_words, classifier,
 															  min_token_len, delete_numbers_flag,
 															  excluded_default_stop_words)

@@ -25,7 +25,11 @@ class TrainTemplate(ABC):
 		train_alg.preprocess_text(df, tokenizer_type, stop_words, use_default_stop_words, min_token_len,
 								  delete_numbers_flag, excluded_default_stop_words)
 		# Создание последовательности / векторов
-		train_alg.create_sequences(df, max_words)
+		result = train_alg.create_sequences(df, max_words)
+		if result:
+			word_to_index, index_to_word = result
+		else:
+			word_to_index, index_to_word = None, None
 
 		# Получение обучающей и тестовой выборок
 		x_train, y_train, x_test, y_test = train_alg.create_train_and_test_samples(df, max_words)
@@ -33,7 +37,7 @@ class TrainTemplate(ABC):
 		# Обучение модели
 		trained_model = train_alg.train(classifier, x_train, y_train)
 
-		return trained_model, x_train, y_train, x_test, y_test
+		return trained_model, x_train, y_train, x_test, y_test, word_to_index, index_to_word
 
 	def preprocess_text(self, df, tokenizer_type, stop_words, use_default_stop_words, min_token_len,
 						delete_numbers_flag, excluded_default_stop_words):
@@ -86,6 +90,8 @@ class TrainBagOfWordAlgorithm(TrainTemplate):
 		print('SEQUENCES')
 		print(df['sequences'][:4])
 		print('END SEQUENCES')
+
+		return [word_to_index, index_to_word]
 
 	def create_train_and_test_samples(self, df, max_words):
 		train, test = self.train_test_split(df)
