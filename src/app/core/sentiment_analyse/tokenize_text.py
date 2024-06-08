@@ -72,7 +72,7 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 		# default nltk-tokenizer
 		tokens = nltk.tokenize.word_tokenize(text)
 
-	preprocessed_text = set()
+	preprocessed_text = list()
 	for t in tokens:
 		if t in punctuation_marks: continue
 		if t in stop_words: continue
@@ -81,9 +81,9 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 
 		lemma = morph.parse(t)[0].normal_form
 		if lemma not in stop_words:
-			preprocessed_text.add(lemma)
+			preprocessed_text.append(lemma)
 
-	preprocessed_text = list(preprocessed_text) # нормализация данных
+	# preprocessed_text = list(preprocessed_text) # нормализация данных
 	return preprocessed_text, stop_words
 
 

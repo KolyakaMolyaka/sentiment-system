@@ -192,16 +192,3 @@ class MlModelSaver:
 				json.dump(json_data, f, ensure_ascii=False, indent=4)
 
 			print('One of dictionaries saved in', filename)
-
-
-
-# def save_sample_in_file(filename, data, delim='\n\n'):
-# 	""" Сохранение обучающего вектора в файл """
-#
-# 	with open(filename, 'w', encoding='utf-8') as f:
-# 		vectors = []
-# 		for vector in data:
-# 			str_vector = list(map(str, vector))
-# 			vectors.append(','.join(str_vector))
-# 		f.write(delim.join(vectors))
-#

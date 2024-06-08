@@ -78,7 +78,7 @@ class TrainTemplate(ABC):
 
 
 class TrainBagOfWordAlgorithm(TrainTemplate):
-	def create_sequences(self, df, max_words):
+	def create_sequences(self, df, max_words, ):
 		tokens = []
 		for row in df['preprocessed'].tolist():
 			tokens.extend(row)

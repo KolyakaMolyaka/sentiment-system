@@ -9,27 +9,27 @@ from .dto import auth_from_form_reqparser
 
 ns = Namespace(
 	name='Authorization Controller',
-	description='Авторизация/Регистрация пользователя в системе',
+	description='Регистрация / авторизация пользователя в системе',
 	path='/auth/',
 	validate=True
 )
 
 
-@ns.route('/check_auth')
-class CheckAuth(Resource):
-	method_decorators = [requires_auth]
-
-	@ns.response(int(HTTPStatus.OK), 'Пользователь авторизован')
-	@ns.response(int(HTTPStatus.UNAUTHORIZED), 'Пользователь не авторизован.')
-	@ns.doc(security='basicAuth')
-	def post(self):
-		"""Проверка авторизации пользователя """
-		# authorized, message = process_user_check_authorization()
-		# response = jsonify({'authorized': authorized, 'message': message})
-		# response.status_code = HTTPStatus.OK if authorized else HTTPStatus.UNAUTHORIZED
-		response = jsonify({'статус': 'ok'})
-		response.status_code = HTTPStatus.OK
-		return response
+# @ns.route('/check_auth')
+# class CheckAuth(Resource):
+# 	method_decorators = [requires_auth]
+#
+# 	@ns.response(int(HTTPStatus.OK), 'Пользователь авторизован')
+# 	@ns.response(int(HTTPStatus.UNAUTHORIZED), 'Пользователь не авторизован.')
+# 	@ns.doc(security='basicAuth')
+# 	def post(self):
+# 		"""Проверка авторизации пользователя """
+# 		authorized, message = process_user_check_authorization()
+# 		response = jsonify({'authorized': authorized, 'message': message})
+# 		response.status_code = HTTPStatus.OK if authorized else HTTPStatus.UNAUTHORIZED
+		# response = jsonify({'статус': 'ok'})
+		# response.status_code = HTTPStatus.OK
+		# return response
 
 
 @ns.route('/register')

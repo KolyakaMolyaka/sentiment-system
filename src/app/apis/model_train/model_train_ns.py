@@ -42,6 +42,11 @@ class ModelTrainWithTeatherAPI(Resource):
 		# данные для векторизации
 		vectorization_type = d.get('vectorizationType')
 
+		if vectorization_type == 'bag-of-words':
+			# проверка, что есть
+			# maxWords
+			# showUnknownWordCodeInVectors
+			pass
 
 		# данные для классификатора
 		classifier = d.get('classifier')

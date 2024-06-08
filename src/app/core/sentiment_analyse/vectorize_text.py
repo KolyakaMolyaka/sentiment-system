@@ -46,11 +46,11 @@ def vectorize_sequences(sequences: list[list[int]], dimension=5000):
 	@param: dimension:int размерность каждого преобразованного вектора
 	"""
 	# (кол-во отзывов x максимальное кол-во используемых слов)
-	results = np.zeros((len(sequences), dimension))
+	results = np.zeros((len(sequences), dimension), dtype=int)
 	for i, seq in enumerate(sequences):
 		for index in seq:
 			if index < dimension:
-				results[i, index] += 1.
+				results[i, index] += 1
 	# возвращает список списков (для сериализации)
 	return [list(x) for x in results]
 
@@ -67,7 +67,8 @@ def text_to_sequence(txt: list[str], word_to_index: dict):
 	seq = []  # список, содержащий коды слов
 	for word in txt:  # получение слова из текста
 		index = word_to_index.get(word, 1)  # 1 означает неизвестное слово
-		# неизвестные слова не добавляем в выходную последовательность
+		# в выходную последовательность попадают коды неизвестных слов, если это необходимо
+		# в ином случае, они не попадают в неё
 		if index != 1:
 			seq.append(index)
 	return seq
@@ -91,10 +92,20 @@ def process_convert_tokens_in_seq_of_codes(tokens: list[str], max_words: int = -
 	for t in tokens:
 		words.update([t])
 
+
+	# код заполнитель
+	filler_code_str = 'код заполнитель'
+	filler_code = 0
+
+	# код неизвестного слова
+	unknown_code_str = 'код неизвестного слова'
+	unknown_code = 1
+
 	# словарь, отображающий слова в коды
-	word_to_index = {}
+	word_to_index = { filler_code_str: filler_code, unknown_code_str: unknown_code }
+
 	# словарь, отображающий коды в слова
-	index_to_word = {}
+	index_to_word = { filler_code: filler_code_str, unknown_code: unknown_code_str }
 
 	# создание словарей
 	for ind, word_tuple in enumerate(words.most_common(max_words - 2)):
