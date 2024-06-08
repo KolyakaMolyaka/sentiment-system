@@ -44,7 +44,7 @@ ns = Namespace(
 class CreateWildberriesMenu(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Список категорий и подкатегорий')
 	@ns.doc(description='Получение списка категорий и подкатегорий для создания датасета')
-	def post(self):
+	def get(self):
 		""" Получение списка меню сайта Wildberries """
 
 		from src.app.parsers.wb_parser.entities.wbmenu import WbMenu
