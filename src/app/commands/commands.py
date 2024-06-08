@@ -1,10 +1,25 @@
 import os.path
+import shutil
 import nltk
 import wget
 import click
 from flask.cli import with_appcontext
+from flask import current_app
 from src.app.ext.database import db
 from src.app.ext.database.models import Tokenizer, Vectorization
+
+
+@click.command('delete-previous-models')
+@with_appcontext
+def delete_previous_models_command():
+	""" Clear previous saved models """
+
+	trained_models_filepath = current_app.config['TRAINED_MODELS']
+	for file in os.listdir(trained_models_filepath):
+		filepath = os.path.join(current_app.config['TRAINED_MODELS'], file)
+		shutil.rmtree(filepath)
+
+	click.echo(f'Directory {trained_models_filepath} was cleared!')
 
 
 @click.command('init-db')

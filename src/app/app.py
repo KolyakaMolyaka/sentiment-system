@@ -11,7 +11,6 @@ def create_app():
 	load_dotenv()
 	app.config.from_prefixed_env()
 
-
 	""" Upload folder """
 	UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 	app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -36,10 +35,12 @@ def create_app():
 	from src.app.ext.celery.make_celery import celery_init_app
 	celery_init_app(app)
 
-	from .commands.commands import init_db_command, fill_db_command, download_nltk_data_command, download_navec_data_command
+	from .commands.commands import init_db_command, fill_db_command, download_nltk_data_command, \
+		download_navec_data_command, delete_previous_models_command
 	app.cli.add_command(init_db_command)
 	app.cli.add_command(fill_db_command)
 	app.cli.add_command(download_nltk_data_command)
 	app.cli.add_command(download_navec_data_command)
+	app.cli.add_command(delete_previous_models_command)
 
 	return app
