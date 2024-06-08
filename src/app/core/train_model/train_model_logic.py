@@ -25,10 +25,7 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	# Проверка, что модели с таким же названием нет
 	ml_model = MlModel.get(model_title)
 	if ml_model:
-		abort(int(HTTPStatus.CONFLICT), f'Модель с названием {model_title} уже существует. Сперва удалите её.')
-
-
-
+		abort(int(HTTPStatus.CONFLICT), f'Модель с названием {model_title} уже существует. Сперва удалите её. Или придумайте новое название.')
 
 	word_to_index, index_to_word = None, None # инициализация для последующего сохранения
 
