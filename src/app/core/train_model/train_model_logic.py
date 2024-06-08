@@ -1,18 +1,18 @@
 from flask import abort, request, current_app
 from http import HTTPStatus
 from celery import shared_task
-from collections import Counter
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 import numpy as np
 
-from src.app.core.sentiment_analyse.tokenize_text import process_text_tokenization
 from src.app.core.sentiment_analyse.vectorize_text import text_to_sequence, \
 	vectorize_sequences, vectorize_text
 
 from .model_saver import MlModelSaver
 
 from src.app.ext.database.models import MlModel, User
+
+from .train_template import TrainBagOfWordAlgorithm, TrainEmbeddingsAlgorithm
 
 
 # ПОД ВОПРОСОМ ДЕКОРАТОР
@@ -28,38 +28,42 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		abort(int(HTTPStatus.CONFLICT), f'Модель с названием {model_title} уже существует. Сперва удалите её.')
 
 
-	# Токенизация текста
-	df['preprocessed'] = df.apply(
-		lambda row: process_text_tokenization(tokenizer_type, row['text'],
-											  stop_words=stop_words,
-											  use_default_stop_words=use_default_stop_words)[0],
-		axis=1 # axis=1 means row
-	)
+
 
 	word_to_index, index_to_word = None, None # инициализация для последующего сохранения
 
 	if vectorization_type == 'bag-of-words':
-		from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens_in_seq_of_codes
-		tokens = []
-		for row in df['preprocessed'].tolist():
-			tokens.extend(row)
-
-		seq, word_to_index, index_to_word = process_convert_tokens_in_seq_of_codes(tokens, max_words)
-		df['sequences'] = df.apply(lambda row:
-								   [word_to_index.get(word, 0) for word in row['preprocessed']]
-							   , axis=1)
-		print('SEQUENCES')
-		print(df['sequences'][:4])
-		print('END SEQUENCES')
-
-
+		train_alg = TrainBagOfWordAlgorithm()
 	elif vectorization_type == 'embeddings':
-
-		df['sequences'] = df.apply(lambda row:
-								   vectorize_text(row['preprocessed'], 100)
-								   , axis=1)
+		train_alg = TrainEmbeddingsAlgorithm()
 	else:
 		abort(int(HTTPStatus.BAD_REQUEST, 'Неправильный тип векторизации'))
+
+	train_alg.preprocess_text(df, tokenizer_type, stop_words, use_default_stop_words)
+	train_alg.create_sequences(df, max_words)
+
+	# if vectorization_type == 'bag-of-words':
+		# from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens_in_seq_of_codes
+		# tokens = []
+		# for row in df['preprocessed'].tolist():
+		# 	tokens.extend(row)
+		#
+		# seq, word_to_index, index_to_word = process_convert_tokens_in_seq_of_codes(tokens, max_words)
+		# df['sequences'] = df.apply(lambda row:
+		# 						   [word_to_index.get(word, 0) for word in row['preprocessed']]
+		# 					   , axis=1)
+		# print('SEQUENCES')
+		# print(df['sequences'][:4])
+		# print('END SEQUENCES')
+		# pass
+
+	# elif vectorization_type == 'embeddings':
+	#
+	# 	df['sequences'] = df.apply(lambda row:
+	# 							   vectorize_text(row['preprocessed'], 100)
+	# 							   , axis=1)
+	# else:
+	# 	abort(int(HTTPStatus.BAD_REQUEST, 'Неправильный тип векторизации'))
 
 	train, test = train_test_split(df, test_size=.2)
 
