@@ -171,32 +171,6 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 
 	ml_model_saver.save_yaml_model_info()
 
-
-	# # получение метрик модели
-	# y_true = []
-	# for c in classes:
-	# 	y_true.append('Positive' if c == 1 else 'Negative')
-	#
-	# y_pred = []
-	# from src.app.core.model_actions.model_actions_logic import process_model_prediction_request
-	# for comment in comments:
-	# 	prediction = process_model_prediction_request(model_title, comment)[0]
-	# 	negative_accuracy, positive_accuracy = prediction
-	# 	if negative_accuracy > positive_accuracy:
-	# 		prediction_result = 'Negative'
-	# 	else:
-	# 		prediction_result = 'Positive'
-	# 	y_pred.append(prediction_result)
-	#
-	#
-	# from src.app.core.metrics.model_metrics_logic import process_user_get_model_metrics
-	# metrics: dict = process_user_get_model_metrics(y_true, y_pred, positive_label='Positive')
-	#
-	# new_model.model_recall = metrics['recall']
-	# new_model.model_accuracy = metrics['accuracy']
-	# new_model.model_precision = metrics['precision']
-	# new_model.save()
-
 	return {
 		'metrics': metrics,
 		'test_accuracy': test_accuracy,
