@@ -1,5 +1,7 @@
+import shutil
+import os
 from http import HTTPStatus
-from flask import jsonify, request, send_file, abort
+from flask import jsonify, request, send_file, abort, current_app
 from flask_restx import Namespace, Resource
 from .dto import user_ml_model, user_prediction_model
 from src.app.ext.database.models import MlModel, User
@@ -81,15 +83,14 @@ class DownloadModelAPI(Resource):
 		model_title = d.get('modelTitle')
 
 		user = User.query.filter_by(username=request.authorization.username).one_or_none()
-		model = MlModel.query.filter_by(user_id=user.id, model_title=model_title)
+		model = MlModel.query.filter_by(user_id=user.id, model_title=model_title).one_or_none()
 
 		if not model:
 			abort(int(HTTPStatus.NOT_FOUND), f'модель {model_title} не существует')
 
-		import shutil
 		output_filename = 'ml_model'
 
-		dir_name = f'/usr/src/app/src/app/core/train_model/models/{user.username}/{model_title}'
+		dir_name = os.path.join(current_app.config['TRAINED_MODELS'], user.username, model_title)
 		archive = shutil.make_archive(output_filename, 'zip', dir_name)
 		print(archive)
 		return send_file(archive, mimetype="application/octet-stream", as_attachment=True)
