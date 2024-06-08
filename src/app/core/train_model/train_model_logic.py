@@ -99,6 +99,8 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 						vectorization_type=vectorization_type,
 						use_default_stop_words=use_default_stop_words,
 						max_words=max_words,
+						min_token_len=min_token_len,
+						delete_numbers_flag=delete_numbers_flag,
 						user_id=User.get(username=username).id)
 
 	new_model.save()
