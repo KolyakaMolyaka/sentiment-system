@@ -85,7 +85,8 @@ class TrainBagOfWordAlgorithm(TrainTemplate):
 
 		seq, word_to_index, index_to_word = process_convert_tokens_in_seq_of_codes(tokens, max_words)
 		df['sequences'] = df.apply(lambda row:
-								   [word_to_index.get(word, 0) for word in row['preprocessed']]
+									# 1 - код заполнитель неизвестного слова
+								   [word_to_index.get(word, 1) for word in row['preprocessed']]
 								   , axis=1)
 		return [word_to_index, index_to_word]
 
