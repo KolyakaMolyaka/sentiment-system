@@ -4,6 +4,9 @@ from src.app.ext.database.models import Tokenizer
 from flask import abort
 from http import HTTPStatus
 
+
+def process_get_default_stop_words() -> list:
+	return nltk.corpus.stopwords.words('russian')
 def process_text_tokenization(tokenizer_type: str, text: str,
 							  punctuation_marks=None, stop_words=None,
 							  morph=None,
@@ -28,7 +31,7 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 		- список с обработанными токенами.
 	"""
 	PUNCTUATION_MARKS = list('!?,.:;-()') + ['..'] + ['...']
-	RUSSIAN_DEFAULT_STOP_WORDS = nltk.corpus.stopwords.words('russian')
+	RUSSIAN_DEFAULT_STOP_WORDS = process_get_default_stop_words()
 
 	if not morph:
 		morph = pymorphy2.MorphAnalyzer()

@@ -3,7 +3,7 @@ from flask import jsonify
 from flask_restx import Namespace, Resource
 from .dto import tokenization_model, tokenizer_info_model
 from src.app.core.sentiment_analyse.tokenize_text import (
-	process_text_tokenization, process_tokenizer_info
+	process_text_tokenization, process_tokenizer_info, process_get_default_stop_words
 )
 from ..utilities import utils
 
@@ -13,6 +13,19 @@ ns = Namespace(
 	path='/tokenization/',
 	validate=True
 )
+@ns.route('/default_stop_words')
+class TokenizerInfoAPI(Resource):
+	@ns.response(int(HTTPStatus.OK), 'Стоп-слова, используемые по умолчанию')
+	@ns.doc(description='Получение списка стоп-слов, используемых при токенизации по умолчанию')
+	def get(self):
+		""" Получение списка стоп-слов, используемых при токенизации по умолчанию """
+
+		response = jsonify({
+			'default_stop_words': process_get_default_stop_words(),
+		})
+		response.status_code = HTTPStatus.OK
+
+		return response
 
 
 @ns.route('/tokenizer_info')
