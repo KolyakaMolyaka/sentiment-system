@@ -39,23 +39,6 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	word_to_index, index_to_word = None, None # инициализация для последующего сохранения
 
 	if vectorization_type == 'bag-of-words':
-		"""
-		words = Counter()
-		for txt in df['preprocessed']:
-			words.update(txt)
-
-		# словарь, отображающий слова в коды
-		word_to_index = {}
-		# словарь, отображающий коды в слова
-		index_to_word = {}
-
-		# создание словарей
-		for ind, word in enumerate(words.most_common(max_words - 2)):
-			word_to_index[word[0]] = ind + 2
-			index_to_word[ind + 2] = word[0]
-
-		df['sequences'] = df.apply(lambda row: text_to_sequence(row['preprocessed'], word_to_index), axis=1)
-		"""
 		from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens_in_seq_of_codes
 		tokens = []
 		for row in df['preprocessed'].tolist():
