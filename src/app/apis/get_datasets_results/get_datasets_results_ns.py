@@ -85,5 +85,4 @@ class GetWildberriesDataset(Resource):
 		with tempfile.NamedTemporaryFile(mode='w', delete=True, encoding='utf-8') as temp_file:
 			json.dump(feedbacks, temp_file, ensure_ascii=False)
 			result.forget()
-			setattr(result, 'was_called_already', True)
 			return send_file(temp_file.name, mimetype='application/octet-stream', as_attachment=True, download_name='dataset.json')

@@ -1,4 +1,5 @@
 import shutil
+import tempfile
 import os
 from http import HTTPStatus
 from flask import jsonify, request, send_file, abort, current_app
@@ -89,11 +90,12 @@ class DownloadModelAPI(Resource):
 			abort(int(HTTPStatus.NOT_FOUND), f'модель {model_title} не существует')
 
 		output_filename = 'ml_model'
-
 		dir_name = os.path.join(current_app.config['TRAINED_MODELS'], user.username, model_title)
-		archive = shutil.make_archive(output_filename, 'zip', dir_name)
-		print(archive)
-		return send_file(archive, mimetype="application/octet-stream", as_attachment=True)
+
+		# Создание временного архива
+		with tempfile.TemporaryDirectory() as temp_dir:
+			temp_archive_path = shutil.make_archive(os.path.join(temp_dir, output_filename), 'zip', dir_name)
+			return send_file(temp_archive_path, mimetype="application/octet-stream", as_attachment=True)
 
 
 
