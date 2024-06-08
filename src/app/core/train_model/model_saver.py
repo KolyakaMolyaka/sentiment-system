@@ -153,13 +153,19 @@ class MlModelSaver:
 				'recall': ml_model.model_recall,
 				'confusion_matrix': self.metrics['confusion_matrix']
 			},
+			'tokenization': {
+				'tokenizer_type': ml_model.tokenizer_type,
+				'tokenizer_description': str(Tokenizer.get(ml_model.tokenizer_type).description),
+				'min_token_length': ml_model.min_token_len,
+				'delete_numbers_flag': ml_model.delete_numbers_flag,
+				'used_default_stop_words': ml_model.use_default_stop_words
+			},
+			'vectorization': {
+				'vectorization_type': ml_model.vectorization_type,
+				'vectorization_description': str(Vectorization.get(ml_model.vectorization_type).description),
+				'max_words': ml_model.max_words,
+			},
 			'classifier': ml_model.classifier,
-			'tokenizer_type': ml_model.tokenizer_type,
-			'tokenizer_description': str(Tokenizer.get(ml_model.tokenizer_type).description),
-			'vectorization_type': ml_model.vectorization_type,
-			'vectorization_description': str(Vectorization.get(ml_model.vectorization_type).description),
-			'max_words': ml_model.max_words,
-			'used_default_stop_words': ml_model.use_default_stop_words
 		}
 
 		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, MODEL_INFO_FILENAME)
