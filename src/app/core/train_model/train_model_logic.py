@@ -13,7 +13,8 @@ from .train_template import TrainBagOfWordAlgorithm, TrainEmbeddingsAlgorithm, T
 @shared_task(ignore_result=False)
 def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 					  vectorization_type, model_title, classifier,
-					  max_words, classes, comments):
+					  max_words, classes, comments, min_token_len=1,
+					  delete_numbers_flag=False, excluded_default_stop_words=None):
 	# Проверка, что модели с таким же названием нет
 	ml_model = MlModel.get(model_title)
 	if ml_model:
@@ -34,7 +35,9 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		y_train, \
 		x_test, \
 		y_test = TrainTemplate.get_trained_model_with_samples(train_alg, df, tokenizer_type, stop_words,
-															  use_default_stop_words, max_words, classifier)
+															  use_default_stop_words, max_words, classifier,
+															  min_token_len, delete_numbers_flag,
+															  excluded_default_stop_words)
 	# оценка точности модели
 	test_accuracy = trained_model.score(x_test, y_test)
 

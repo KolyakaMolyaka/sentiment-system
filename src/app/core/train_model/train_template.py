@@ -16,22 +16,38 @@ from src.app.core.sentiment_analyse.vectorize_text import vectorize_text, vector
 class TrainTemplate(ABC):
 
 	@classmethod
-	def get_trained_model_with_samples(cls, train_alg, df, tokenizer_type, stop_words, use_default_stop_words, max_words, classifier):
+	def get_trained_model_with_samples(cls, train_alg, df, tokenizer_type, stop_words, use_default_stop_words,
+									   max_words, classifier, min_token_len, delete_numbers_flag,
+									   excluded_default_stop_words):
 		""" Шаги выполнения алгоритма с train_alg: TrainTemplate """
-		train_alg.preprocess_text(df, tokenizer_type, stop_words, use_default_stop_words)
+
+		# Препроцессинг текста
+		train_alg.preprocess_text(df, tokenizer_type, stop_words, use_default_stop_words, min_token_len,
+								  delete_numbers_flag, excluded_default_stop_words)
+		# Создание последовательности / векторов
 		train_alg.create_sequences(df, max_words)
+
+		# Получение обучающей и тестовой выборок
 		x_train, y_train, x_test, y_test = train_alg.create_train_and_test_samples(df, max_words)
+
+		# Обучение модели
 		trained_model = train_alg.train(classifier, x_train, y_train)
+
 		return trained_model, x_train, y_train, x_test, y_test
 
-	def preprocess_text(self, df, tokenizer_type, stop_words, use_default_stop_words):
+	def preprocess_text(self, df, tokenizer_type, stop_words, use_default_stop_words, min_token_len,
+						delete_numbers_flag, excluded_default_stop_words):
 		""" Токенизация текста """
 
 		# Токенизация текста
 		df['preprocessed'] = df.apply(
 			lambda row: process_text_tokenization(tokenizer_type, row['text'],
 												  stop_words=stop_words,
-												  use_default_stop_words=use_default_stop_words)[0],
+												  use_default_stop_words=use_default_stop_words,
+												  min_token_len=min_token_len,
+												  delete_numbers_flag=delete_numbers_flag,
+												  excluded_default_stop_words=excluded_default_stop_words
+												  )[0],
 			axis=1  # axis=1 means row
 		)
 

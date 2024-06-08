@@ -27,6 +27,8 @@ class ModelTrainWithTeatherAPI(Resource):
 	def post(self):
 		""" Обучение модели МО с учителем согласно заданным параметрам """
 
+		from ..utilities import utils
+		utils.fill_with_default_values(ns.payload, train_model)
 		d = ns.payload
 
 		# данные для сохранения модели
@@ -48,6 +50,10 @@ class ModelTrainWithTeatherAPI(Resource):
 		classes = d.get('classes')
 
 		max_words = d.get('maxWords')
+		min_token_len = d.get('minTokenLength')
+		delete_numbers_flag = d.get('deleteNumbers')
+		excluded_default_stop_words = d.get('excludeDefaultStopWords')
+
 
 		if len(comments) != len(classes):
 			response = jsonify({
@@ -68,7 +74,8 @@ class ModelTrainWithTeatherAPI(Resource):
 		df = pd.DataFrame(train_info, columns=['text', 'score'])
 		trained_meta = train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 										 vectorization_type, model_title, classifier,
-										 max_words, classes, comments)
+										 max_words, classes, comments, min_token_len,
+										 delete_numbers_flag, excluded_default_stop_words)
 		response = jsonify({
 			 **trained_meta
 		})
