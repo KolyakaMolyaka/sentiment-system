@@ -2,9 +2,7 @@ from http import HTTPStatus
 from flask import jsonify
 from flask_restx import Resource, Namespace
 from src.app.core.auth.auth_logic import (
-	process_login_from_form,
 	process_register_from_form,
-	process_user_check_authorization,
 	requires_auth
 )
 from .dto import auth_from_form_reqparser
