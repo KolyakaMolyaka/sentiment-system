@@ -57,7 +57,7 @@ class GetWildberriesDataset(Resource):
 		description='Получение результата запроса по созданию датасета по ID.'
 	)
 	def get(self, result_id: str):
-		"""Получение статуса/результата запроса создания датасета с сайта wildberries"""
+		"""Получение статуса / результата запроса создания датасета с сайта wildberries"""
 
 		result = AsyncResult(result_id)
 

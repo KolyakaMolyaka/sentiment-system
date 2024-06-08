@@ -100,11 +100,12 @@ class MlModelSaver:
 	def save_dataframe(self, df):
 		""" Сохранение датафрейма в файл """
 
-		DF_FILENAME = 'handled_data.xlsx'
+		DF_FILENAME = 'handled_data.csv'
 		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, DF_FILENAME)
 		self.verify_path(filename)
 
-		df.to_excel(filename, index=True)
+		# df.to_excel(filename, index=True)
+		df.to_csv(filename, index=True, sep=';')
 
 		print('Dataframe saved in:', filename)
 

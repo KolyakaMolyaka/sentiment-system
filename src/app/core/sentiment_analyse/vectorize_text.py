@@ -52,7 +52,7 @@ def vectorize_sequences(sequences: list[list[int]], dimension=5000):
 			if index < dimension:
 				results[i, index] += 1
 	# возвращает список списков (для сериализации)
-	return [list(x) for x in results]
+	return [list(int(num) for num in seq) for seq in results]
 
 
 def text_to_sequence(txt: list[str], word_to_index: dict):
