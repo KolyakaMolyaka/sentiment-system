@@ -3,7 +3,6 @@ from http import HTTPStatus
 from celery import shared_task
 from collections import Counter
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 import numpy as np
 
@@ -23,16 +22,13 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 					  max_words, classes, comments):
 
 
-	# user = User.get(request.authorization.username)
-	# for m in user.ml_models:
-		# if m.model_title == model_title:
-
-	# Проверка, что модели с таким же названием же нет
+	# Проверка, что модели с таким же названием нет
 	ml_model = MlModel.get(model_title)
 	if ml_model:
 		abort(int(HTTPStatus.CONFLICT), f'Модель с названием {model_title} уже существует. Сперва удалите её.')
 
 
+	# Токенизация текста
 	df['preprocessed'] = df.apply(
 		lambda row: process_text_tokenization(tokenizer_type, row['text'],
 											  stop_words=stop_words,
@@ -40,17 +36,15 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		axis=1 # axis=1 means row
 	)
 
-	print('PREPROCESSED')
-	print(df['preprocessed'][:4])
-
 	word_to_index, index_to_word = None, None # инициализация для последующего сохранения
 
 	if vectorization_type == 'bag-of-words':
+		"""
 		words = Counter()
 		for txt in df['preprocessed']:
 			words.update(txt)
 
-		# словарь, оображающий слова в коды
+		# словарь, отображающий слова в коды
 		word_to_index = {}
 		# словарь, отображающий коды в слова
 		index_to_word = {}
@@ -61,6 +55,20 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 			index_to_word[ind + 2] = word[0]
 
 		df['sequences'] = df.apply(lambda row: text_to_sequence(row['preprocessed'], word_to_index), axis=1)
+		"""
+		from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens_in_seq_of_codes
+		tokens = []
+		for row in df['preprocessed'].tolist():
+			tokens.extend(row)
+
+		seq, word_to_index, index_to_word = process_convert_tokens_in_seq_of_codes(tokens, max_words)
+		df['sequences'] = df.apply(lambda row:
+								   [word_to_index.get(word, 0) for word in row['preprocessed']]
+							   , axis=1)
+		print('SEQUENCES')
+		print(df['sequences'][:4])
+		print('END SEQUENCES')
+
 
 	elif vectorization_type == 'embeddings':
 
