@@ -16,6 +16,8 @@ def requires_auth(f):
 		if not username or not password:
 			abort(int(HTTPStatus.UNAUTHORIZED), 'нет username или password в заголовке authorization.')
 
+		password_check(password)
+
 		u = User.query.filter_by(username=username).one_or_none()
 		if not u:
 			abort(int(HTTPStatus.UNAUTHORIZED), 'пользователь с username не существует.')
@@ -24,6 +26,7 @@ def requires_auth(f):
 			abort(int(HTTPStatus.UNAUTHORIZED), f'пользователь {username} имеет другой пароль!')
 
 		return f(*args, **kwargs)
+
 	return decorator
 
 
@@ -41,14 +44,41 @@ def process_login_from_form(username: str, password: str):
 	return
 
 
+def password_check(password: str):
+	""" Проверка надёжности """
+
+	MIN_PASSWORD_LEN = 8
+	special_sym = list('!@#$%^&*()-=_+')
+
+	# длина пароля
+	if len(password) < MIN_PASSWORD_LEN:
+		abort(int(HTTPStatus.BAD_REQUEST), f'Длина пароля должна быть не меньше {MIN_PASSWORD_LEN} символов')
+
+	# наличие заглавной буквы
+	if not any(ch.isupper() for ch in password):
+		abort(int(HTTPStatus.BAD_REQUEST), 'Хотя бы один символ в пароле должен быть заглавной буквой')
+
+	# наличие строчной буквы
+	if not any(ch.islower() for ch in password):
+		abort(int(HTTPStatus.BAD_REQUEST), 'Хотя бы один символ в пароле должен быть строчной буквой')
+
+	# наличие спецсимвола
+	if not any(ch in special_sym for ch in password):
+		abort(int(HTTPStatus.BAD_REQUEST), f'Хотя бы один символ в пароле должен быть из списка: "{special_sym}"')
+
+	return True
+
+
 def process_register_from_form(username: str, password: str):
 	already_exist_user = User.query.filter_by(username=username).one_or_none()
 	if already_exist_user:
 		abort(int(HTTPStatus.CONFLICT), f'{username} уже существует.')
 
 	u = User(username=username)
+	password_check(password)
 	u.set_password(password)
 	u.save()
+
 
 def process_user_check_authorization():
 	authorized = False
