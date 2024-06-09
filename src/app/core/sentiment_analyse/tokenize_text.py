@@ -13,7 +13,7 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 							  use_default_stop_words=True,
 							  min_token_len=1,
 							  delete_numbers_flag=False,
-							  excluded_default_stop_words: list =None
+							  excluded_default_stop_words: list =None,
 							  ) -> tuple[list[str], list[str]]:
 	"""
 	Вход:

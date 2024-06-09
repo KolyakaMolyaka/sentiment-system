@@ -74,6 +74,7 @@ class TokenizeTextAPI(Resource):
 		min_token_len = d.get('minTokenLength')
 		delete_numbers_flag = d.get('deleteNumbers')
 		excluded_default_stop_words = d.get('excludeDefaultStopWords')
+		punctuations = d.get('punctuations')
 
 		# get tokens with used stop words
 		tokens, used_stop_words = process_text_tokenization(
@@ -83,7 +84,8 @@ class TokenizeTextAPI(Resource):
 			use_default_stop_words=use_default_stop_words,
 			min_token_len=min_token_len,
 			delete_numbers_flag=delete_numbers_flag,
-			excluded_default_stop_words=excluded_default_stop_words
+			excluded_default_stop_words=excluded_default_stop_words,
+			punctuation_marks=punctuations
 		)
 
 		# return tokens with used stop words
