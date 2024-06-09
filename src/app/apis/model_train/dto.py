@@ -15,6 +15,8 @@ train_model = Model('TrainInfo', {
 	'stopWords': fields.List(fields.String, example=['ешкин-кот', 'блин'], required=False, default=None),
 	'useDefaultStopWords': fields.Boolean(example=True, default=True, required=False),
 	'excludeDefaultStopWords': fields.List(fields.String, example=[], required=False, default=None),
+	'punctuations': fields.List(fields.String, required=True, example=list('!?,.;:') + ['..', '...'],
+								default=list('!?,.;:') + ['..', '...']),
 	'minTokenLength': fields.Integer(example=1, default=1, required=False),
 	'deleteNumbers': fields.Boolean(example=False, default=False, required=False),
 	'comments': fields.List(fields.String, example=comments_list, required=True),

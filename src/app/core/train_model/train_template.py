@@ -18,12 +18,12 @@ class TrainTemplate(ABC):
 	@classmethod
 	def get_trained_model_with_samples(cls, train_alg, df, tokenizer_type, stop_words, use_default_stop_words,
 									   max_words, classifier, min_token_len, delete_numbers_flag,
-									   excluded_default_stop_words):
+									   excluded_default_stop_words, punctuations):
 		""" Шаги выполнения алгоритма с train_alg: TrainTemplate """
 
 		# Препроцессинг текста
 		train_alg.preprocess_text(df, tokenizer_type, stop_words, use_default_stop_words, min_token_len,
-								  delete_numbers_flag, excluded_default_stop_words)
+								  delete_numbers_flag, excluded_default_stop_words, punctuations)
 		# Создание последовательности / векторов
 		result = train_alg.create_sequences(df, max_words)
 		if result:
@@ -40,7 +40,7 @@ class TrainTemplate(ABC):
 		return trained_model, x_train, y_train, x_test, y_test, word_to_index, index_to_word
 
 	def preprocess_text(self, df, tokenizer_type, stop_words, use_default_stop_words, min_token_len,
-						delete_numbers_flag, excluded_default_stop_words):
+						delete_numbers_flag, excluded_default_stop_words, punctuations):
 		""" Токенизация текста """
 
 		# Токенизация текста
@@ -50,7 +50,8 @@ class TrainTemplate(ABC):
 												  use_default_stop_words=use_default_stop_words,
 												  min_token_len=min_token_len,
 												  delete_numbers_flag=delete_numbers_flag,
-												  excluded_default_stop_words=excluded_default_stop_words
+												  excluded_default_stop_words=excluded_default_stop_words,
+												  punctuation_marks=punctuations
 												  )[0],
 			axis=1  # axis=1 means row
 		)

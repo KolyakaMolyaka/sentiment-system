@@ -58,6 +58,7 @@ class ModelTrainWithTeatherAPI(Resource):
 		min_token_len = d.get('minTokenLength')
 		delete_numbers_flag = d.get('deleteNumbers')
 		excluded_default_stop_words = d.get('excludeDefaultStopWords')
+		punctuations = d.get('punctuations')
 
 
 		if len(comments) != len(classes):
@@ -80,7 +81,7 @@ class ModelTrainWithTeatherAPI(Resource):
 		trained_meta = train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 										 vectorization_type, model_title, classifier,
 										 max_words, classes, comments, min_token_len,
-										 delete_numbers_flag, excluded_default_stop_words)
+										 delete_numbers_flag, excluded_default_stop_words, punctuations)
 		response = jsonify({
 			 **trained_meta
 		})
