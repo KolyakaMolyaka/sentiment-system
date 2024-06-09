@@ -1,9 +1,5 @@
 from abc import ABC, abstractmethod
 from sklearn.model_selection import train_test_split
-import numpy as np
-from flask import abort
-from http import HTTPStatus
-from sklearn.linear_model import LogisticRegression
 from .classifier_factory import ClassifierFactory
 import numpy as np
 

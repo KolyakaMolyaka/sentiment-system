@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from flask import abort
-from .tokenizer import NLTKTokenizer, DefaultWhitespaceTokenizer, NLTKWordpunctTokenizer
+from .tokenizers import NLTKTokenizer, DefaultWhitespaceTokenizer, NLTKWordpunctTokenizer
 
 
 class TokenizerFactory:
