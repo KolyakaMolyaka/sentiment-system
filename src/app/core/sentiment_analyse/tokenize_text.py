@@ -3,6 +3,7 @@ import pymorphy2
 from src.app.ext.database.models import Tokenizer
 from flask import abort
 from http import HTTPStatus
+from .tokenizer_factory import TokenizerFactory
 
 
 def process_get_default_stop_words() -> list:
@@ -62,15 +63,8 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 		stop_words -= excluded_default_stop_words
 
 	text = text.lower()
-	if tokenizer_type == 'nltk-tokenizer':
-		tokens = nltk.tokenize.word_tokenize(text)
-	elif tokenizer_type == 'default-whitespace-tokenizer':
-		tokens = text.split()
-	elif tokenizer_type == 'wordpunct-tokenizer':
-		tokens = nltk.tokenize.wordpunct_tokenize(text)
-	else:
-		# default nltk-tokenizer
-		tokens = nltk.tokenize.word_tokenize(text)
+	tokenizer: Tokenizer = TokenizerFactory.get_tokenizer(tokenizer_type)
+	tokens = tokenizer.tokenize(text)
 
 	preprocessed_text = list()
 	for t in tokens:
