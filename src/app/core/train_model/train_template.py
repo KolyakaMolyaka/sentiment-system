@@ -4,6 +4,7 @@ import numpy as np
 from flask import abort
 from http import HTTPStatus
 from sklearn.linear_model import LogisticRegression
+from .classifier_factory import ClassifierFactory
 import numpy as np
 
 from src.app.core.sentiment_analyse.tokenize_text import process_text_tokenization
@@ -70,12 +71,9 @@ class TrainTemplate(ABC):
 		pass
 
 	def train(self, classifier, x_train, y_train, random_state=42, max_iter=500):
-		if classifier == 'logistic-regression':
-			lr = LogisticRegression(random_state=random_state, max_iter=max_iter)
-			lr.fit(x_train, y_train)
-			return lr
-		else:
-			abort(int(HTTPStatus.CONFLICT), 'Неизвестное значение параметра classifier')
+		classifier = ClassifierFactory.get_classifier(classifier, random_state, max_iter)
+		classifier.fit(x_train, y_train)
+		return classifier
 
 
 class TrainBagOfWordAlgorithm(TrainTemplate):
@@ -86,7 +84,7 @@ class TrainBagOfWordAlgorithm(TrainTemplate):
 
 		seq, word_to_index, index_to_word = process_convert_tokens_in_seq_of_codes(tokens, max_words)
 		df['sequences'] = df.apply(lambda row:
-									# 1 - код заполнитель неизвестного слова
+								   # 1 - код заполнитель неизвестного слова
 								   [word_to_index.get(word, 1) for word in row['preprocessed']]
 								   , axis=1)
 		return [word_to_index, index_to_word]

@@ -1,4 +1,7 @@
+from http import HTTPStatus
+from flask import abort
 from .tokenizer import NLTKTokenizer, DefaultWhitespaceTokenizer, NLTKWordpunctTokenizer
+
 
 class TokenizerFactory:
 	@staticmethod
@@ -12,6 +15,6 @@ class TokenizerFactory:
 		elif tokenizer_type == 'wordpunct-tokenizer':
 			tokenizer = NLTKWordpunctTokenizer()
 		else:
-			tokenizer = NLTKTokenizer()
+			abort(int(HTTPStatus.CONFLICT), 'Неизвестный тип токенизатора')
 
 		return tokenizer
