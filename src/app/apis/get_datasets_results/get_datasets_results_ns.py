@@ -8,8 +8,8 @@ import json
 
 ns = Namespace(
 	name='Get Dataset Result Controller',
-	description='Получение датасета',
-	path='/get_result/',
+	description='Получение размеченного набора данных',
+	path='/get_dataset/',
 	validate=True
 )
 
@@ -52,12 +52,12 @@ ns = Namespace(
 @ns.route('/wildberries/<string:result_id>')
 class GetWildberriesDataset(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Результат обработки запроса с заданным ID')
-	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Неправильный запрос')
+	@ns.response(int(HTTPStatus.CONFLICT), 'Произошла ошибка в системе очереди задач.')
 	@ns.doc(
-		description='Получение результата запроса по созданию датасета по ID.'
+		description='Получение результата запроса создания размеченного набора данных по ранее выданному уникальному ID.'
 	)
 	def get(self, result_id: str):
-		"""Получение статуса / результата запроса создания датасета с сайта wildberries"""
+		"""Получение статуса / результата запроса создания размеченного набора данных определенной категории с сайта Wildberries"""
 
 		result = AsyncResult(result_id)
 
@@ -80,9 +80,11 @@ class GetWildberriesDataset(Resource):
 			return response
 
 		feedbacks = result.result
+		print(f'Got {len(feedbacks)} feedbacks.')
 
 		# Создаем временный файл для сохранения JSON данных словаря
-		with tempfile.NamedTemporaryFile(mode='w', delete=True, encoding='utf-8') as temp_file:
-			json.dump(feedbacks, temp_file, ensure_ascii=False)
+		with tempfile.NamedTemporaryFile(mode='w', delete=False, encoding='utf-8') as temp_file:
+			json.dump(feedbacks, temp_file, ensure_ascii=False, indent=2)
 			result.forget()
 			return send_file(temp_file.name, mimetype='application/octet-stream', as_attachment=True, download_name='dataset.json')
+

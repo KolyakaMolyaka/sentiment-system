@@ -19,6 +19,8 @@ class MlModel(db.Model):
 	min_token_len = db.Column(db.Integer, nullable=False, default=1)
 	delete_numbers_flag = db.Column(db.Boolean, nullable=False, default=False)
 
+	trained_self = db.Column(db.Boolean, nullable=False, default=False)
+
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 	def __repr__(self):

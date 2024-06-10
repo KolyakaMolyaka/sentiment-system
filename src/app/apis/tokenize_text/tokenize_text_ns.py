@@ -9,16 +9,16 @@ from ..utilities import utils
 
 ns = Namespace(
 	name='Tokenization Controller',
-	description='Токенизация текста',
+	description='Взаимодействие с процессом токенизации текста',
 	path='/tokenization/',
 	validate=True
 )
 @ns.route('/default_stop_words')
 class TokenizerInfoAPI(Resource):
-	@ns.response(int(HTTPStatus.OK), 'Стоп-слова, используемые по умолчанию')
-	@ns.doc(description='Получение списка стоп-слов, используемых при токенизации по умолчанию')
+	@ns.response(int(HTTPStatus.OK), 'Стоп-слова, используемые по умолчанию.')
+	@ns.doc(description='Получение списка стоп-слов, используемых при токенизации по умолчанию.')
 	def get(self):
-		""" Получение списка стоп-слов, используемых при токенизации по умолчанию """
+		""" Получение списка стоп-слов, используемых при токенизации текста по умолчанию """
 
 		response = jsonify({
 			'default_stop_words': process_get_default_stop_words(),
@@ -30,8 +30,8 @@ class TokenizerInfoAPI(Resource):
 
 @ns.route('/tokenizer_info')
 class TokenizerInfoAPI(Resource):
-	@ns.response(int(HTTPStatus.OK), 'Информация о токенизаторе')
-	@ns.response(int(HTTPStatus.NOT_FOUND), 'Токенизатор не существует')
+	@ns.response(int(HTTPStatus.OK), 'Информация о токенизаторе.')
+	@ns.response(int(HTTPStatus.NOT_FOUND), 'Указанный токенизатор не существует.')
 	@ns.expect(tokenizer_info_model)
 	@ns.doc(description='Получение информации о токенизаторе')
 	def post(self):
@@ -50,14 +50,33 @@ class TokenizerInfoAPI(Resource):
 
 		return response
 
+@ns.route('/tokenizers')
+class TokenizersListAPI(Resource):
+	@ns.response(int(HTTPStatus.OK), 'Список доступных токенизаторов.')
+	@ns.doc(description='Получение списка токенизаторов, которые можно использовать для токенизации текста в системе.')
+	def get(self):
+		""" Получение списка возможных токенизаторов """
+		from src.app.ext.database.models.tokenizer import Tokenizer
+		tokenizers = Tokenizer.query.all()
+
+		response = jsonify({
+			'tokenizers': [t.title for t in tokenizers ]
+		})
+		response.status_code = HTTPStatus.OK
+		return response
+
 @ns.route('/tokenize_text')
 class TokenizeTextAPI(Resource):
-	@ns.response(int(HTTPStatus.OK), 'Токены текста')
+	@ns.response(int(HTTPStatus.OK), 'Токены текста и используемые стоп-слова.')
+	@ns.response(int(HTTPStatus.NOT_FOUND), 'Указанный токенизатор не существует.' )
 	@ns.expect(tokenization_model)
 	@ns.doc(
 		description=
 		'Разбиение текста на токены с использованием доступных токенизаторов. '
-		'Можно добавить стоп-слова и/или использовать пресет по-умолчанию.'
+		'Возможно добавление и исключение стоп-слов, использование пресета по умолчанию. '
+		'Допустима настройка знаков препинания, которые будут использоваться для токенизации. '
+		'Присутствует ограничение минимальной длины выделенных токенов. '
+		'Можно указать флаг принудительного удаления чисел из токенов.'
 	)
 	def post(self):
 		""" Токенизация текста """

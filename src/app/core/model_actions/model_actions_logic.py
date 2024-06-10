@@ -5,6 +5,15 @@ from src.app.ext.database.models import MlModel, User
 from flask import request, abort, current_app
 from http import HTTPStatus
 
+def load_model(model_title):
+	user = User.query.filter_by(username=request.authorization.username).one_or_none()
+	# load model
+	filename = os.path.join(current_app.config['TRAINED_MODELS'], user.username, model_title, 'model.pkl')
+	with open(filename, 'rb') as f:
+		ml_model = pickle.load(f)
+		return ml_model
+
+
 
 def process_model_delete_request(model_title):
 	user = User.query.filter_by(username=request.authorization.username).one_or_none()
@@ -22,15 +31,17 @@ def process_model_delete_request(model_title):
 
 
 def process_model_prediction_request(model_title, text, proba=True):
+
 	user = User.query.filter_by(username=request.authorization.username).one_or_none()
 	model = MlModel.query.filter_by(model_title=model_title, user_id=user.id).one_or_none()
 	if not model:
 		abort(int(HTTPStatus.NOT_FOUND), f'модель {model_title} не найдена')
 
+	if model.trained_self:
+		abort(int(HTTPStatus.CONFLICT), f'модель {model_title} обучалась с уже готовыми векторными представлениями. Воспользуйтесь соответствующим контроллером.')
+
 	# load model
-	filename = os.path.join(current_app.config['TRAINED_MODELS'], user.username, model_title, 'model.pkl')
-	with open(filename, 'rb') as f:
-		ml_model = pickle.load(f)
+	ml_model = load_model(model_title)
 
 	filename = os.path.join(current_app.config['TRAINED_MODELS'], user.username, model_title, 'stop_words.csv')
 	stop_words = []
@@ -70,3 +81,18 @@ def process_model_prediction_request(model_title, text, proba=True):
 
 	else:
 		abort(int(HTTPStatus.CONFLICT), 'неизвестный vectorization type')
+
+
+def process_model_prediction_with_vector_request(model_title: str, vector: list[float], proba=True):
+	user = User.query.filter_by(username=request.authorization.username).one_or_none()
+	model = MlModel.query.filter_by(model_title=model_title, user_id=user.id).one_or_none()
+	if not model:
+		abort(int(HTTPStatus.NOT_FOUND), f'модель {model_title} не найдена')
+
+	if not model.trained_self:
+		abort(int(HTTPStatus.CONFLICT), f'модель {model_title} обучалась с помощью определенного алгоритма. Воспользуйтесь соответствующим контроллером.')
+
+	ml_model = load_model(model_title)
+	print([vector])
+	if proba:
+		return ml_model.predict_proba([vector])

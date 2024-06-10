@@ -1,10 +1,12 @@
 from flask_restx import Model, fields
 from . import classes_list, comments_list
 
+available_classifiers = ('logistic-regression',)
+
 train_model = Model('TrainInfo', {
 	'modelTitle': fields.String(required=True, example='my_model'),
 	'classifier': fields.String(required=True, example='logistic-regression',
-								enum=('logistic-regression',)
+								enum=available_classifiers
 								),
 	'tokenizerType': fields.String(required=True,
 								   enum=('nltk-tokenizer', 'default-whitespace-tokenizer', 'wordpunct-tokenizer'),
@@ -24,4 +26,16 @@ train_model = Model('TrainInfo', {
 						   required=True),
 	'maxWords': fields.Integer(required=True, example=400, default=400),
 
+})
+
+train_model_v2 = Model('TrainInfov2', {
+	'modelTitle': fields.String(required=True, example='my_model'),
+	'classifier': fields.String(required=True, example=available_classifiers[0], enum=available_classifiers),
+	'vectors': fields.List(
+		fields.List(
+			fields.Float,
+		),
+		example=[[.1, .2], [.2, .4], [.3, .4], [.2, .3], [.4, .5], [.3, .5]], required=True
+	),
+	'classes': fields.List(fields.Integer(help='0 - Negative, 1 - Positive'), example=[1, 0, 1, 1, 0, 0], required=True),
 })

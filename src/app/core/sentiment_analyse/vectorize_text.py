@@ -69,8 +69,9 @@ def text_to_sequence(txt: list[str], word_to_index: dict):
 		index = word_to_index.get(word, 1)  # 1 означает неизвестное слово
 		# в выходную последовательность попадают коды неизвестных слов, если это необходимо
 		# в ином случае, они не попадают в неё
-		if index != 1:
-			seq.append(index)
+		seq.append(index)
+		# if index != 1:
+		# 	seq.append(index)
 	return seq
 
 

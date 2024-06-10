@@ -63,18 +63,37 @@ class MlModelSaver:
 		print('ROC curve saved in:', filename)
 		return roc_auc
 
-	def save_dataset(self, comments, tokens, classes):
+	def save_dataset(self, comments, classes):
 		""" Сохранение обучающего датасета в файл """
 
 		DATASET_FILENAME = 'comments_and_classes.csv'
 		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, DATASET_FILENAME)
 		self.verify_path(filename)
 
-		# fieldnames = ['Текст комментария', 'Выделенные токены', 'Бинарная оценка тональности']
 		with open(filename, 'w', newline='') as csvfile:
 			csvwriter = csv.writer(csvfile, delimiter=';')
-			for row in zip(comments, tokens, classes):
+			for row in zip(comments, classes):
 				csvwriter.writerow(row)
+
+	def load_dataset(self):
+		""" Получение датасета, сохраненного с помощью Model_saver.save_dataset()"""
+		DATASET_FILENAME = 'comments_and_classes.csv'
+		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, DATASET_FILENAME)
+
+		result_vectors = []
+		result_classes = []
+		with open(filename, 'r') as csvfile:
+			csvreader = csv.reader(csvfile, delimiter=';')
+			for row in csvreader:
+				vectors, classes = row
+				result_vectors.append(
+					list(map(float, vectors[1:-1].split(', ')))  # преобразование строки в список из вещ. чисел
+				)
+				result_classes.extend(
+					[int(classes)]  # преобразование строки в код
+				)
+
+		return result_vectors, result_classes
 
 	def save_stop_words(self, stop_words, use_default_stop_words):
 		""" Сохранение стоп-слов в файл """
@@ -145,29 +164,36 @@ class MlModelSaver:
 
 		MODEL_INFO_FILENAME = 'model_info.yaml'
 
-		ml_model = MlModel.get(self.model_title)
+		from src.app.ext.database.models import User
+		from flask import request
+
+		user = User.get(username=request.authorization.username)
+		ml_model = MlModel.query.filter_by(user_id=user.id, model_title=self.model_title).one_or_none()
+
 		model_info = {
 			'model_title': ml_model.model_title,
 			'metrics': {
 				'accuracy': ml_model.model_accuracy,
 				'precision': ml_model.model_precision,
 				'recall': ml_model.model_recall,
-				'confusion_matrix': self.metrics['confusion_matrix']
-			},
-			'tokenization': {
+			}
+		}
+		if not ml_model.trained_self:
+			model_info['metrics']['confusion_matrix'] = self.metrics['confusion_matrix']
+			model_info['tokenization'] = {
 				'tokenizer_type': ml_model.tokenizer_type,
 				'tokenizer_description': str(Tokenizer.get(ml_model.tokenizer_type).description),
 				'min_token_length': ml_model.min_token_len,
 				'delete_numbers_flag': ml_model.delete_numbers_flag,
 				'used_default_stop_words': ml_model.use_default_stop_words
-			},
-			'vectorization': {
+			}
+			model_info['vectorization'] = {
 				'vectorization_type': ml_model.vectorization_type,
 				'vectorization_description': str(Vectorization.get(ml_model.vectorization_type).description),
 				'max_words': ml_model.max_words,
-			},
-			'classifier': ml_model.classifier,
-		}
+			}
+			model_info['classifier'] = ml_model.classifier
+			model_info['trained_self'] = ml_model.trained_self
 
 		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, MODEL_INFO_FILENAME)
 		self.verify_path(filename)
@@ -177,19 +203,20 @@ class MlModelSaver:
 
 		print('Model info saved in:', MODEL_INFO_FILENAME)
 
-	def save_bag_of_words_dictionaries(self, word_to_index, index_to_word):
-		""" Сохранение словарей для преобразований в файл (для алгоритма мешок слов) """
 
-		WORD_TO_INDEX_FILENAME = 'word_to_index.json'
-		INDEX_TO_WORD_FILENAME = 'index_to_word.json'
+def save_bag_of_words_dictionaries(self, word_to_index, index_to_word):
+	""" Сохранение словарей для преобразований в файл (для алгоритма мешок слов) """
 
-		filename1 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, WORD_TO_INDEX_FILENAME)
-		filename2 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, INDEX_TO_WORD_FILENAME)
+	WORD_TO_INDEX_FILENAME = 'word_to_index.json'
+	INDEX_TO_WORD_FILENAME = 'index_to_word.json'
 
-		for filename, json_data in ((filename1, word_to_index), (filename2, index_to_word)):
-			self.verify_path(filename)
+	filename1 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, WORD_TO_INDEX_FILENAME)
+	filename2 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, INDEX_TO_WORD_FILENAME)
 
-			with open(filename, 'w', encoding='utf-8') as f:
-				json.dump(json_data, f, ensure_ascii=False, indent=4)
+	for filename, json_data in ((filename1, word_to_index), (filename2, index_to_word)):
+		self.verify_path(filename)
 
-			print('One of dictionaries saved in', filename)
+		with open(filename, 'w', encoding='utf-8') as f:
+			json.dump(json_data, f, ensure_ascii=False, indent=4)
+
+		print('One of dictionaries saved in', filename)

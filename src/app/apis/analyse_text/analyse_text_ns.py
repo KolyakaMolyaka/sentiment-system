@@ -7,7 +7,7 @@ from .dto import sentiment_model
 
 ns = Namespace(
 	name='Sentiment Analyse Controller',
-	description='Анализ тональностью текста',
+	description='Анализ тональностью текста на основе предобученных моделей',
 	path='/sentiment_analyse/',
 	validate=True
 )
@@ -17,9 +17,14 @@ ns = Namespace(
 class SentimentAnalyseAPI(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Оценка тональности.')
 	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Неизвестный тип модели.')
+	@ns.doc(
+		description='Оценка тональности текста на основе предобученных моделей. '
+					'Текст должен относиться к предметной области "Блузки и рубашки", в противном случае '
+					'корректность тональности не гарантируется.'
+	)
 	@ns.expect(sentiment_model)
 	def post(self):
-		""" Анализ тональности текста при помощи обученной модели."""
+		""" Анализ тональности текста при помощи предобученных моделей """
 
 		d = ns.payload
 

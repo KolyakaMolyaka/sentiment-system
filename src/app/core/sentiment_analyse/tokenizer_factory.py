@@ -15,6 +15,6 @@ class TokenizerFactory:
 		elif tokenizer_type == 'wordpunct-tokenizer':
 			tokenizer = NLTKWordpunctTokenizer()
 		else:
-			abort(int(HTTPStatus.CONFLICT), 'Неизвестный тип токенизатора')
+			abort(int(HTTPStatus.NOT_FOUND), 'Неизвестный тип токенизатора')
 
 		return tokenizer

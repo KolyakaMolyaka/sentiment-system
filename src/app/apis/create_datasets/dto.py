@@ -14,10 +14,10 @@ wildberries_parser_info_reqparser.add_argument(
 	name='category', type=str, location='json', required=True, nullable=False
 )
 wildberries_parser_info_reqparser.add_argument(
-	name='subcategory', type=str, location='json', required=True, nullable=False
+	name='subcategory', type=str, location='json', required=True, nullable=False,
 )
 wildberries_parser_info_reqparser.add_argument(
-	name='pages', type=int, location='json', required=True, nullable=False
+	name='pages', type=int, location='json', required=True, nullable=False,
 )
 
 

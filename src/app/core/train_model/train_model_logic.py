@@ -1,6 +1,9 @@
+import os
+from sklearn.model_selection import train_test_split
 from flask import abort, request, current_app
 from http import HTTPStatus
 from celery import shared_task
+from .classifier_factory import ClassifierFactory
 
 from .model_saver import MlModelSaver
 
@@ -9,17 +12,25 @@ from src.app.ext.database.models import MlModel, User
 from .train_template import TrainBagOfWordAlgorithm, TrainEmbeddingsAlgorithm, TrainTemplate
 
 
+def check_ml_model_not_exists(model_title: str):
+	# Проверка, что модели с таким же названием нет
+	ml_model = MlModel.get(model_title)
+	if ml_model:
+		abort(int(HTTPStatus.CONFLICT),
+			  f'Модель с названием {model_title} уже существует. Сперва удалите её. Или придумайте новое название.')
+
+
+
+
 # ПОД ВОПРОСОМ ДЕКОРАТОР
 @shared_task(ignore_result=False)
 def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 					  vectorization_type, model_title, classifier,
 					  max_words, classes, comments, min_token_len=1,
 					  delete_numbers_flag=False, excluded_default_stop_words=None, punctuations=None):
-	# Проверка, что модели с таким же названием нет
-	ml_model = MlModel.get(model_title)
-	if ml_model:
-		abort(int(HTTPStatus.CONFLICT),
-			  f'Модель с названием {model_title} уже существует. Сперва удалите её. Или придумайте новое название.')
+
+
+	check_ml_model_not_exists(model_title)
 
 	# Использование паттерна Шаблонный метод для выбора алгоритма обучения модели
 	if vectorization_type == 'bag-of-words':
@@ -27,7 +38,7 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	elif vectorization_type == 'embeddings':
 		train_alg = TrainEmbeddingsAlgorithm()
 	else:
-		abort(int(HTTPStatus.BAD_REQUEST, 'Неправильный тип векторизации'))
+		abort(int(HTTPStatus.NOT_FOUND, 'Неправильный тип векторизации'))
 
 	# Обучение модели и получение данных её обучения
 	trained_model, \
@@ -44,7 +55,6 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	test_accuracy = trained_model.score(x_test, y_test)
 
 	# сохранение модели в папке пользователя
-	import os
 	username = request.authorization.username
 
 	save_dir = current_app.config['TRAINED_MODELS']
@@ -116,3 +126,51 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		'test_accuracy': test_accuracy,
 		'roc_auc': roc_auc
 	}
+
+
+def process_train_model_with_vectors_logic(model_title: str, classifier_type: str, vectors: list[list[int]], classes: list[int]):
+
+	check_ml_model_not_exists(model_title)
+
+	classifier = ClassifierFactory.get_classifier(classifier_type)
+	x_train, x_test, y_train, y_test = train_test_split(vectors, classes)
+	model = classifier.fit(x_train, y_train)
+
+	username = request.authorization.username
+
+	save_dir = current_app.config['TRAINED_MODELS']
+	MlModelSaver.verify_path(os.path.join(save_dir, username, model_title))  # ОБЯЗАТЕЛЬНО УБЕДИТЬСЯ
+	ml_model_saver = MlModelSaver(save_dir, username, model_title)
+
+
+	ml_model_saver.save_model(model)
+	# ml_model_saver.save_stop_words([], use_default_stop_words=False)
+	ml_model_saver.save_dataset(vectors, classes)
+
+	new_model = MlModel(model_title=model_title,
+						classifier=classifier_type,
+						tokenizer_type='unknown',
+						vectorization_type='unknown',
+						use_default_stop_words=False,
+						max_words=-1,
+						min_token_len=-1,
+						delete_numbers_flag=False,
+						user_id=User.get(username=username).id,
+						trained_self=True)
+
+	new_model.save()
+
+
+	from src.app.core.metrics.model_metrics_logic import process_user_calculate_model_metrics
+	metrics = process_user_calculate_model_metrics(model_title, get_from_db_flag=False)
+
+	new_model.model_accuracy = metrics['accuracy']
+	new_model.model_precision = metrics['precision']
+	new_model.model_recall = metrics['recall']
+
+	new_model.save()
+
+	ml_model_saver.save_yaml_model_info()
+
+
+

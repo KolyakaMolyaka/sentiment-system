@@ -14,8 +14,8 @@ api = Api(
 	description= \
 		'Главная цель API для анализа тональности текста заключается в определении оценки или '
 		'эмоциональной окраски текста. Система может определить, является ли текст позитивным, '
-		'негативным или нейтральным. Также пользователям системы будет предоставляться функционал '
-		'по созданию (настройке) собственных систем анализа тональности текста с требуемыми параметрами. ',
+		'негативным или нейтральным на основе предобученных моделей. Также пользователям системы будет '
+		'предоставляться функционал по созданию (настройке) собственных систем анализа тональности текста с требуемыми параметрами. ',
 	version='1.0',
 	authorizations=authorizations
 )
@@ -34,16 +34,19 @@ api.models[tokenizer_info_model.name] = tokenizer_info_model
 from .vectorize_text.dto import vectorization_info_model
 api.models[vectorization_info_model.name] = vectorization_info_model
 
-from .models_actions.dto import user_ml_model, user_prediction_model
+from .models_actions.dto import user_ml_model, user_prediction_model, user_prediction_model_v2
 api.models[user_ml_model.name] = user_ml_model
 api.models[user_prediction_model.name] = user_prediction_model
+api.models[user_prediction_model_v2.name] = user_prediction_model_v2
+
 
 
 from .analyse_text.dto import sentiment_model
 api.models[sentiment_model.name] = sentiment_model
 
-from .model_train.dto import train_model
+from .model_train.dto import train_model, train_model_v2
 api.models[train_model.name] = train_model
+api.models[train_model_v2.name] = train_model_v2
 
 from .create_datasets.create_datasets_ns import ns as create_datasets_ns
 api.add_namespace(create_datasets_ns)
@@ -67,8 +70,10 @@ from .model_train.model_train_ns import ns as model_train_ns
 api.add_namespace(model_train_ns) # <---------------
 
 # метрики модели
-from .metrics.model_metrics_ns import input_to_output_model
+from .metrics.model_metrics_ns import input_to_output_model, ml_model_metrics
 api.models[input_to_output_model.name] = input_to_output_model
+api.models[ml_model_metrics.name] = ml_model_metrics
+
 
 from .metrics.model_metrics_ns import model_metrics_ns
 api.add_namespace(model_metrics_ns)

@@ -9,8 +9,8 @@ vectorization_info_model = Model('VectorizationInfoModel', {
 
 
 tokenlist_model = Model('TokenList', {
-	'tokens': fields.List(fields.String, example=['мама', 'мыть', 'рама'], required=True, default=[]),
-	'maxWords': fields.Integer(required=False, example=5, default=-1)
+	'tokens': fields.List(fields.String, example=['мама', 'мыть', 'рама', 'папа', 'мыть', 'тарелка'], required=True, default=[]),
+	# 'maxWords': fields.Integer(required=False, example=5, default=-1)
 })
 
 vectorization_sequence_model = Model('VectorizationSequences', {

@@ -4,14 +4,15 @@ import os
 from http import HTTPStatus
 from flask import jsonify, request, send_file, abort, current_app
 from flask_restx import Namespace, Resource
-from .dto import user_ml_model, user_prediction_model
+from .dto import user_ml_model, user_prediction_model, user_prediction_model_v2
 from src.app.ext.database.models import MlModel, User
 from src.app.core.auth.auth_logic import requires_auth
-from src.app.core.model_actions.model_actions_logic import process_model_delete_request, process_model_prediction_request
+from src.app.core.model_actions.model_actions_logic import process_model_delete_request, \
+	process_model_prediction_request, process_model_prediction_with_vector_request
 
 ns = Namespace(
 	name='Models Actions Controller',
-	description='Взаимодействие с моделями',
+	description='Взаимодействие с созданными пользователем моделями',
 	path='/models_actions/',
 	validate=True
 )
@@ -21,27 +22,39 @@ ns = Namespace(
 class ModelsInfoAPI(Resource):
 	method_decorators = [requires_auth]
 
-	@ns.response(int(HTTPStatus.OK), 'Модели пользователя')
-	# @ns.expect(tokenization_model)
+	@ns.response(int(HTTPStatus.OK), 'Список обученных моделей пользователя.')
 	@ns.doc(
-		description='Получение информации об обученных моделях пользователя.'
+		description='Получение списка обученных моделей пользователя с подробной информацией.'
 	)
 	@ns.doc(security='basicAuth')
 	def get(self):
-		""" Обученные модели """
+		""" Получение списка обученных моделей  """
 		user = User.get(request.authorization.username)
-		# models = MlModel.query.filter_by(user_id=user.id)
 		models = user.ml_models
 		print(f'{user.username} модели:', [m.model_title for m in models])
-		output_models = [
-			{'model_title': m.model_title,
-			 'model_tokenizer_type': m.tokenizer_type,
-			 'model_vectorization_type': m.vectorization_type,
-			 'model_use_default_stop_words': m.use_default_stop_words,
-			 'model_accuracy': m.model_accuracy,
-			 'model_precision': m.model_precision,
-			 'model_recall': m.model_recall,
-			 } for m in models]
+
+		output_models = []
+		for m in models:
+			if m.trained_self:
+				output_models.append({
+					'model_title': m.model_title,
+					'model_accuracy': m.model_accuracy,
+					'model_precision': m.model_precision,
+					'model_recall': m.model_recall,
+					'trained_self': m.trained_self,
+				})
+			else:
+				output_models.append({
+					'model_tokenizer_type': m.tokenizer_type,
+					'model_vectorization_type': m.vectorization_type,
+					'model_use_default_stop_words': m.use_default_stop_words,
+					'model_accuracy': m.model_accuracy,
+					'model_precision': m.model_precision,
+					'model_recall': m.model_recall,
+					'model_min_token_length': m.min_token_len,
+					'model_delete_numbers_flag': m.delete_numbers_flag,
+					'model_max_words': m.max_words,
+				})
 		response = jsonify({
 			'models': output_models
 		})
@@ -49,12 +62,12 @@ class ModelsInfoAPI(Resource):
 
 		return response
 
-	@ns.response(int(HTTPStatus.OK), 'Удаление модели пользователя')
-	@ns.doc(description='Удаление модели пользователя')
+	@ns.response(int(HTTPStatus.OK), 'Указанная модель успешно удалена.')
+	@ns.doc(description='Удаление ранее обученной модели пользователя.')
 	@ns.expect(user_ml_model)
 	@ns.doc(security='basicAuth')
 	def delete(self):
-		""" Удаление обученной модели """
+		""" Удаление ранее обученной модели """
 		d = ns.payload
 		# Parse payload to get data
 		model_title = d.get('modelTitle')
@@ -70,12 +83,13 @@ class ModelsInfoAPI(Resource):
 class DownloadModelAPI(Resource):
 	method_decorators = [requires_auth]
 
-	@ns.response(int(HTTPStatus.OK), 'Модели пользователя')
+	@ns.response(int(HTTPStatus.OK), 'Исходные файлы обученной модели.')
+	@ns.response(int(HTTPStatus.NOT_FOUND), 'Указанная модель не найдена.')
 	@ns.expect(user_ml_model)
-	@ns.doc(description='Загрузка полученной модели.')
+	@ns.doc(description='Получение исходных файлов ранее обученной модели в виде ZIP-архива.')
 	@ns.doc(security='basicAuth')
 	def post(self):
-		""" Получение исходных файлов модели """
+		""" Получение исходных файлов обученной модели """
 		d = ns.payload
 		model_title = d.get('modelTitle')
 
@@ -94,16 +108,17 @@ class DownloadModelAPI(Resource):
 			return send_file(temp_archive_path, mimetype="application/octet-stream", as_attachment=True)
 
 
-
-@ns.route('/model_prediction')
-class ModelsPredictionAPI(Resource):
+@ns.route('/model_prediction/v1')
+class ModelsPredictionAPIv1(Resource):
 	method_decorators = [requires_auth]
+
 	@ns.response(int(HTTPStatus.OK), 'Предсказание модели')
-	@ns.doc(description='Получение предсказания обученной модели.')
+	@ns.response(int(HTTPStatus.NOT_FOUND), 'Указанная модель не найдена.')
+	@ns.response(int(HTTPStatus.CONFLICT), 'Данная модель обучалась не с помощью алгоритма, доступного в системе.')
 	@ns.expect(user_prediction_model)
-	@ns.doc(security='basicAuth')
+	@ns.doc(security='basicAuth', description='Получение предсказания обученной модели.')
 	def post(self):
-		""" Предсказание тональности на основе обученной модели  """
+		""" Предсказание тональности с помощью доступного в системе алгоритма на основе обученной модели """
 		d = ns.payload
 
 		# Parse payload to get data
@@ -111,21 +126,52 @@ class ModelsPredictionAPI(Resource):
 		text = d.get('text')
 
 		prediction = process_model_prediction_request(model_title, text)[0]
-		negative_accuracy, positive_accuracy = prediction
-
-		if abs(negative_accuracy - positive_accuracy) <= 0.05:
-			prediction_result = 'нейтральная тональность'
-		elif negative_accuracy > positive_accuracy:
-			prediction_result = 'негативная тональность'
-		else:
-			prediction_result = 'позитивная тональность'
-
-		print('neg - pos = ', abs(negative_accuracy - positive_accuracy))
-		print('prediction', prediction)
-
-		response = jsonify({'предсказание': prediction_result,
-							'точность позитивной тональности согласно модели': positive_accuracy,
-							'точность негативной тональности согласно модели': negative_accuracy,
-							})
+		sentiment = get_sentiment(prediction)
+		response = jsonify(sentiment)
 		response.status_code = HTTPStatus.OK
 		return response
+
+
+@ns.route('/model_prediction/v2')
+class ModelPredictionAPIv2(Resource):
+	method_decorators = [requires_auth]
+
+	@ns.response(int(HTTPStatus.OK), 'Предсказание модели')
+	@ns.response(int(HTTPStatus.NOT_FOUND), 'Указанная модель не найдена.')
+	@ns.response(int(HTTPStatus.CONFLICT), 'Данная модель обучалась с помощью алгоритма, доступного в системе.')
+	@ns.expect(user_prediction_model_v2)
+	@ns.doc(security='basicAuth',
+			description='Получение предсказания обученной модели.')
+	def post(self):
+		""" Предсказание тональности на основе модели, обученной с помощью подготовленных пользователем векторов """
+		d = ns.payload
+
+		# Parse payload to get data
+		model_title = d.get('modelTitle')
+		vector = d.get('vector')
+
+		prediction = process_model_prediction_with_vector_request(model_title, vector)[0]
+		sentiment = get_sentiment(prediction)
+		response = jsonify(sentiment)
+		response.status_code = HTTPStatus.OK
+		return response
+
+
+def get_sentiment(prediction):
+	negative_accuracy, positive_accuracy = prediction
+
+	if abs(negative_accuracy - positive_accuracy) <= 0.05:
+		prediction_result = 'нейтральная тональность'
+	elif negative_accuracy > positive_accuracy:
+		prediction_result = 'негативная тональность'
+	else:
+		prediction_result = 'позитивная тональность'
+
+	print('neg - pos = ', abs(negative_accuracy - positive_accuracy))
+	print('prediction', prediction)
+
+	return {
+		'предсказание': prediction_result,
+		'точность позитивной тональности согласно модели': positive_accuracy,
+		'точность негативной тональности согласно модели': negative_accuracy,
+	}

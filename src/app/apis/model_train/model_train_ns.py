@@ -1,29 +1,38 @@
 from http import HTTPStatus
 from flask import jsonify
 from flask_restx import Resource, Namespace
-from src.app.core.train_model.train_model_logic import train_model_logic
+from src.app.core.train_model.train_model_logic import train_model_logic, process_train_model_with_vectors_logic
 import pandas as pd
 
-from .dto import train_model
+from .dto import train_model, train_model_v2
 from src.app.core.auth.auth_logic import requires_auth
+
 ns = Namespace(
 	name='Model Train Controller',
-	description='Обучение модели',
+	description='Обучение собственных моделей различными способами',
 	path='/model_train/',
 	validate=True
 )
 
 
-@ns.route('/train_with_teacher')
-class ModelTrainWithTeatherAPI(Resource):
+@ns.route('/train_with_teacher/v1')
+class ModelTrainWithTeacherAPIv1(Resource):
 	method_decorators = [requires_auth]
 
 	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Не совпадает число комментариев с числом классов.')
+	@ns.response(int(HTTPStatus.NOT_FOUND), 'Указанный токенизатор / метод векторизации / классификатор не существует.')
 	@ns.expect(train_model)
 	@ns.doc(
-		desctiption='Обучение модели с учителем.'
+		security='basicAuth',
+		description='Обучение модели с учителем. '
+					'Необходимо указать название создаваемой модели, тип токенизатора, метода векторизации и классификатора. '
+					'Ввести знаки препинания (punctuations), минимальную длину токенов (minTokenLength), '
+					'стоп-слова (stopWords), указать, нужно ли использовать стоп-слова по умолчанию '
+					'(useDefaultStopWords), список исключенных стоп-слов (excludeDefaultStopWords). '
+					'Предоставить размеченный набор данных (comments, classes).  '
+					'Указать флаг принудительного удаления чисел из токенов (deleteNumbers),  а также максимальное '
+					'количество анализируемых слов (maxWords, для обучения алгоритмом "Мешок слов").'
 	)
-	@ns.doc(security='basicAuth')
 	def post(self):
 		""" Обучение модели МО с учителем согласно заданным параметрам """
 
@@ -60,7 +69,6 @@ class ModelTrainWithTeatherAPI(Resource):
 		excluded_default_stop_words = d.get('excludeDefaultStopWords')
 		punctuations = d.get('punctuations')
 
-
 		if len(comments) != len(classes):
 			response = jsonify({
 				'error': 'Число комментариев не совпадает с числом классов.'
@@ -83,8 +91,37 @@ class ModelTrainWithTeatherAPI(Resource):
 										 max_words, classes, comments, min_token_len,
 										 delete_numbers_flag, excluded_default_stop_words, punctuations)
 		response = jsonify({
-			 **trained_meta
+			**trained_meta
 		})
 		response.status_code = HTTPStatus.OK
 
+		return response
+
+
+@ns.route('/train_with_teacher/v2')
+class ModelTrainWithTeacherAPIv2(Resource):
+	method_decorators = [requires_auth]
+
+	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Размерность векторов не единого размера.')
+	@ns.expect(train_model_v2)
+	@ns.doc(
+		desctiption='Обучение модели с помощью полученных пользователем векторных представлений.'
+	)
+	@ns.doc(security='basicAuth')
+	def post(self):
+		""" Обучение модели с помощью меток и готовых векторных представлений """
+
+		d = ns.payload
+
+		model_title = d.get('modelTitle')
+		classifier = d.get('classifier')
+		vectors = d.get('vectors')
+		classes = d.get('classes')
+
+		process_train_model_with_vectors_logic(model_title, classifier, vectors, classes)
+
+		response = jsonify({
+			'статус': f'модель обучена и сохранена под названием {model_title}'
+		})
+		response.status_code = HTTPStatus.OK
 		return response

@@ -35,13 +35,18 @@ ns = Namespace(
 @ns.route('/register')
 class RegisterAPI(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Пользователь успешно зарегистрирован.')
-	@ns.response(int(HTTPStatus.CONFLICT), 'Пользователь с таким username уже существует.')
+	@ns.response(int(HTTPStatus.CONFLICT), 'Пользователь с таким именем уже существует.')
+	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Пароль не соответствует ограничениям.')
 	@ns.expect(auth_from_form_reqparser)
+	@ns.doc(
+		description='Пароль должен содержать не менее 8 символов, в т.ч. один из спецсимволов "!@#$%^&*()-=_+", '
+					'также в пароле должен присутствовать один заглавный и строчный символ, и минимум одна цифра.'
+	)
 	def post(self):
-		"""Регистрация нового пользователя"""
+		"""Регистрация нового пользователя в системе"""
 		form_data = auth_from_form_reqparser.parse_args()
 
 		process_register_from_form(**form_data)
-		response = jsonify({'message': 'пользователь успешно зарегисрирован'})
+		response = jsonify({'message': 'Пользователь успешно зарегисрирован!'})
 		response.status_code = HTTPStatus.OK
 		return response
