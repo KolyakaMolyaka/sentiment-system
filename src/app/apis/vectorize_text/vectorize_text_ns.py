@@ -18,6 +18,21 @@ ns = Namespace(
 	validate=True
 )
 
+@ns.route('/vectorizations')
+class TokenizersListAPI(Resource):
+	@ns.response(int(HTTPStatus.OK), 'Список доступных методов векторизации.')
+	@ns.doc(description='Получение списка методов векторизации, которые можно использовать для векторизации текста в системе.')
+	def get(self):
+		""" Получение списка возможных методов векторизации """
+		from src.app.ext.database.models import Vectorization
+		vectorizations = Vectorization.query.all()
+
+		response = jsonify({
+			'vectorizations': [v.title for v in vectorizations]
+		})
+		response.status_code = HTTPStatus.OK
+		return response
+
 @ns.route('/vectorization_info')
 class VectorizationInfoAPI(Resource):
 	@ns.response(int(HTTPStatus.OK), 'Информация о методе векторизации.')
