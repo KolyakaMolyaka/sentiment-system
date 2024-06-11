@@ -68,10 +68,16 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 
 	preprocessed_text = list()
 	for t in tokens:
-		if t in punctuation_marks: continue
+		# удаление знаков пунктуации из токена
+		for p in punctuation_marks:
+			t = t.replace(p, '')
 		if t in stop_words: continue
+		if delete_numbers_flag:
+			numbers = list('0123456789')
+			for n in numbers:
+				t = t.replace(n, '')
+
 		if not (len(t) > min_token_len): continue
-		if delete_numbers_flag and t.isdigit(): continue
 
 		lemma = morph.parse(t)[0].normal_form
 		if lemma not in stop_words:
