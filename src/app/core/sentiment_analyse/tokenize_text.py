@@ -71,19 +71,24 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 		# удаление знаков пунктуации из токена
 		for p in punctuation_marks:
 			t = t.replace(p, '')
-		if t in stop_words: continue
+
+		# удаление цифр из токена
 		if delete_numbers_flag:
 			numbers = list('0123456789')
 			for n in numbers:
 				t = t.replace(n, '')
 
+		# удаление токенов, длина которых меньше заданной
 		if not (len(t) > min_token_len): continue
 
+		# приведение токена в нормальную форму
 		lemma = morph.parse(t)[0].normal_form
-		if lemma not in stop_words:
-			preprocessed_text.append(lemma)
 
-	# preprocessed_text = list(preprocessed_text) # нормализация данных
+		# удаление токенов, являющихся стоп-словами
+		if lemma in stop_words: continue
+
+		preprocessed_text.append(lemma)
+
 	return preprocessed_text, stop_words
 
 
