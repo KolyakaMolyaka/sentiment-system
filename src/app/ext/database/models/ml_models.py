@@ -10,8 +10,8 @@ class MlModel(db.Model):
 
 	classifier = db.Column(db.String(128), nullable=False)
 
-	tokenizer_type = db.Column(db.String(128), nullable=False)
-	vectorization_type = db.Column(db.String(128), nullable=False)
+	# tokenizer_type = db.Column(db.String(128), nullable=False)
+	# vectorization_type = db.Column(db.String(128), nullable=False)
 	use_default_stop_words = db.Column(db.Boolean, nullable=False)
 
 	max_words = db.Column(db.Integer, nullable=False)
@@ -22,6 +22,8 @@ class MlModel(db.Model):
 	trained_self = db.Column(db.Boolean, nullable=False, default=False)
 
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+	vectorization_id = db.Column(db.Integer, db.ForeignKey('vectorization.id'))
+	tokenizer_id = db.Column(db.Integer, db.ForeignKey('tokenizer.id'))
 
 	def __repr__(self):
 		return f'<Model: title={self.model_title}>'
@@ -44,4 +46,3 @@ class MlModel(db.Model):
 		model.delete()
 		# db.session.delete(model)
 		db.session.commit()
-

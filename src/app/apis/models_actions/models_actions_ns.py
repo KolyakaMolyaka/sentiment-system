@@ -5,7 +5,7 @@ from http import HTTPStatus
 from flask import jsonify, request, send_file, abort, current_app
 from flask_restx import Namespace, Resource
 from .dto import user_ml_model, user_prediction_model, user_prediction_model_v2
-from src.app.ext.database.models import MlModel, User
+from src.app.ext.database.models import MlModel, User, Tokenizer, Vectorization
 from src.app.core.auth.auth_logic import requires_auth
 from src.app.core.model_actions.model_actions_logic import process_model_delete_request, \
 	process_model_prediction_request, process_model_prediction_with_vector_request
@@ -29,32 +29,19 @@ class ModelsInfoAPI(Resource):
 	@ns.doc(security='basicAuth')
 	def get(self):
 		""" Получение списка обученных моделей  """
-		user = User.get(request.authorization.username)
-		models = user.ml_models
-		print(f'{user.username} модели:', [m.model_title for m in models])
+		db_user = User.get(request.authorization.username)
+		models = db_user.ml_models
+		print(f'Модели пользователя "{db_user.username}":', [m.model_title for m in models])
 
+		from .models_info_template import SelfTrainedModelInfo, AlgorithmTrainedModelInfo
 		output_models = []
-		for m in models:
-			if m.trained_self:
-				output_models.append({
-					'model_title': m.model_title,
-					'model_accuracy': m.model_accuracy,
-					'model_precision': m.model_precision,
-					'model_recall': m.model_recall,
-					'trained_self': m.trained_self,
-				})
+		for db_model in models:
+			if db_model.trained_self:
+				model_info:dict = SelfTrainedModelInfo(db_model).get_info()
 			else:
-				output_models.append({
-					'model_tokenizer_type': m.tokenizer_type,
-					'model_vectorization_type': m.vectorization_type,
-					'model_use_default_stop_words': m.use_default_stop_words,
-					'model_accuracy': m.model_accuracy,
-					'model_precision': m.model_precision,
-					'model_recall': m.model_recall,
-					'model_min_token_length': m.min_token_len,
-					'model_delete_numbers_flag': m.delete_numbers_flag,
-					'model_max_words': m.max_words,
-				})
+				model_info:dict = AlgorithmTrainedModelInfo(db_model).get_info()
+			output_models.append(model_info)
+
 		response = jsonify({
 			'models': output_models
 		})

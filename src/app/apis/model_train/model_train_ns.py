@@ -118,10 +118,11 @@ class ModelTrainWithTeacherAPIv2(Resource):
 		vectors = d.get('vectors')
 		classes = d.get('classes')
 
-		process_train_model_with_vectors_logic(model_title, classifier, vectors, classes)
+		metrics = process_train_model_with_vectors_logic(model_title, classifier, vectors, classes)
 
 		response = jsonify({
-			'статус': f'модель обучена и сохранена под названием {model_title}'
+			'статус': f'модель обучена и сохранена под названием {model_title}',
+			'metrics': metrics
 		})
 		response.status_code = HTTPStatus.OK
 		return response

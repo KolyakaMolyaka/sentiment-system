@@ -54,6 +54,12 @@ def download_navec_data_command():
 def fill_db_command():
 	""" Заполнение БД данными по умолчанию """
 
+	unknown_tokenizer = Tokenizer(
+		title = 'unknown',
+		description = 'Неизвестный токенизатор. Пользователь обучал модель с помощью собственных векторов.'
+	)
+	unknown_tokenizer.save()
+
 	# Информация о токенизаторах
 	nltk_tokenizer = Tokenizer(
 		title='nltk-tokenizer',
@@ -78,6 +84,13 @@ def fill_db_command():
 	word_punck_tokenizer.save()
 
 	# Информация о методах векторизации
+
+	unknown_vectorization = Vectorization(
+		title = 'unknown',
+		description = 'Неизвестный метод векторизации. Пользователь самостоятельно получал векторы и обучал модель на их основе.'
+	)
+	unknown_vectorization.save()
+
 	bag_of_words_alg = Vectorization(
 		title='bag-of-words',
 		description='Векторизация текста при помощи алгоритма "Мешок слов". '

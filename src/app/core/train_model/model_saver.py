@@ -167,33 +167,35 @@ class MlModelSaver:
 		from src.app.ext.database.models import User
 		from flask import request
 
-		user = User.get(username=request.authorization.username)
-		ml_model = MlModel.query.filter_by(user_id=user.id, model_title=self.model_title).one_or_none()
+		db_user = User.get(username=request.authorization.username)
+		db_model = MlModel.query.filter_by(user_id=db_user.id, model_title=self.model_title).one_or_none()
+		db_tokenizer = Tokenizer.get_by_id(db_model.tokenizer_id)
+		db_vectorization = Vectorization.get_by_id(db_model.vectorization_id)
 
 		model_info = {
-			'model_title': ml_model.model_title,
+			'model_title': db_model.model_title,
 			'metrics': {
-				'accuracy': ml_model.model_accuracy,
-				'precision': ml_model.model_precision,
-				'recall': ml_model.model_recall,
+				'accuracy': db_model.model_accuracy,
+				'precision': db_model.model_precision,
+				'recall': db_model.model_recall,
 			}
 		}
-		if not ml_model.trained_self:
+		if not db_model.trained_self:
 			model_info['metrics']['confusion_matrix'] = self.metrics['confusion_matrix']
 			model_info['tokenization'] = {
-				'tokenizer_type': ml_model.tokenizer_type,
-				'tokenizer_description': str(Tokenizer.get(ml_model.tokenizer_type).description),
-				'min_token_length': ml_model.min_token_len,
-				'delete_numbers_flag': ml_model.delete_numbers_flag,
-				'used_default_stop_words': ml_model.use_default_stop_words
+				'tokenizer_type': db_tokenizer.title,
+				'tokenizer_description': db_tokenizer.description,
+				'min_token_length': db_model.min_token_len,
+				'delete_numbers_flag': db_model.delete_numbers_flag,
+				'used_default_stop_words': db_model.use_default_stop_words
 			}
 			model_info['vectorization'] = {
-				'vectorization_type': ml_model.vectorization_type,
-				'vectorization_description': str(Vectorization.get(ml_model.vectorization_type).description),
-				'max_words': ml_model.max_words,
+				'vectorization_type': db_vectorization.title,
+				'vectorization_description': db_vectorization.description,
+				'max_words': db_model.max_words,
 			}
-			model_info['classifier'] = ml_model.classifier
-			model_info['trained_self'] = ml_model.trained_self
+			model_info['classifier'] = db_model.classifier
+			model_info['trained_self'] = db_model.trained_self
 
 		filename = os.path.join(self.save_dir, self.model_owner_username, self.model_title, MODEL_INFO_FILENAME)
 		self.verify_path(filename)
@@ -204,19 +206,20 @@ class MlModelSaver:
 		print('Model info saved in:', MODEL_INFO_FILENAME)
 
 
-def save_bag_of_words_dictionaries(self, word_to_index, index_to_word):
-	""" Сохранение словарей для преобразований в файл (для алгоритма мешок слов) """
+	def save_bag_of_words_dictionaries(self, word_to_index, index_to_word):
+		""" Сохранение словарей для преобразований в файл (для алгоритма мешок слов) """
 
-	WORD_TO_INDEX_FILENAME = 'word_to_index.json'
-	INDEX_TO_WORD_FILENAME = 'index_to_word.json'
+		WORD_TO_INDEX_FILENAME = 'word_to_index.json'
+		INDEX_TO_WORD_FILENAME = 'index_to_word.json'
 
-	filename1 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, WORD_TO_INDEX_FILENAME)
-	filename2 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, INDEX_TO_WORD_FILENAME)
+		filename1 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, WORD_TO_INDEX_FILENAME)
+		filename2 = os.path.join(self.save_dir, self.model_owner_username, self.model_title, INDEX_TO_WORD_FILENAME)
 
-	for filename, json_data in ((filename1, word_to_index), (filename2, index_to_word)):
-		self.verify_path(filename)
+		for filename, json_data in ((filename1, word_to_index), (filename2, index_to_word)):
+			self.verify_path(filename)
 
-		with open(filename, 'w', encoding='utf-8') as f:
-			json.dump(json_data, f, ensure_ascii=False, indent=4)
+			with open(filename, 'w', encoding='utf-8') as f:
+				json.dump(json_data, f, ensure_ascii=False, indent=4)
 
-		print('One of dictionaries saved in', filename)
+			print('One of dictionaries saved in', filename)
+

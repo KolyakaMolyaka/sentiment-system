@@ -7,19 +7,19 @@ from .classifier_factory import ClassifierFactory
 
 from .model_saver import MlModelSaver
 
-from src.app.ext.database.models import MlModel, User
+from src.app.ext.database.models import MlModel, User, Tokenizer, Vectorization
 
 from .train_template import TrainBagOfWordAlgorithm, TrainEmbeddingsAlgorithm, TrainTemplate
 
 
-def check_ml_model_not_exists(model_title: str):
+def check_ml_model_not_exists(model_title: str, user_id: int):
 	# Проверка, что модели с таким же названием нет
-	ml_model = MlModel.get(model_title)
+	ml_model = MlModel.query.filter_by(model_title=model_title, user_id=user_id).one_or_none()
 	if ml_model:
-		abort(int(HTTPStatus.CONFLICT),
-			  f'Модель с названием {model_title} уже существует. Сперва удалите её. Или придумайте новое название.')
-
-
+		abort(
+			int(HTTPStatus.CONFLICT),
+			f'Модель с названием {model_title} уже существует. Сперва удалите её. Или придумайте новое название.'
+		)
 
 
 # ПОД ВОПРОСОМ ДЕКОРАТОР
@@ -28,9 +28,9 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 					  vectorization_type, model_title, classifier,
 					  max_words, classes, comments, min_token_len=1,
 					  delete_numbers_flag=False, excluded_default_stop_words=None, punctuations=None):
-
-
-	check_ml_model_not_exists(model_title)
+	username = request.authorization.username
+	db_user = User.get(username=username)
+	check_ml_model_not_exists(model_title, db_user.id)
 
 	# Использование паттерна Шаблонный метод для выбора алгоритма обучения модели
 	if vectorization_type == 'bag-of-words':
@@ -78,42 +78,19 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		# сохранение преобразования слов в коды
 		ml_model_saver.save_bag_of_words_dictionaries(word_to_index, index_to_word)
 
-	def save_sample_in_file(filename, data, delim='\n\n'):
-		os.makedirs(os.path.dirname(filename), exist_ok=True)
-		with open(filename, 'w', encoding='utf-8') as f:
-			vectors = []
-			for vector in data:
-				str_vector = list(map(str, vector))
-				vectors.append(','.join(str_vector))
-			f.write(delim.join(vectors))
-
-	""" *_train, *_test 
-	# x_train
-	filename = dir_path + rf'{modelsdir_path}/{username}/{model_title}/x_train.txt'
-	save_sample_in_file(filename, x_train)
-
-	# x_test
-	filename = dir_path + rf'{modelsdir_path}/{username}/{model_title}/x_test.txt'
-	save_sample_in_file(filename, x_test)
-
-	# y_train
-	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/y_train.txt', 'w') as f:
-		f.write(','.join(list(map(str, list(y_train)))))
-
-	# y_test
-	with open(dir_path + rf'{modelsdir_path}/{username}/{model_title}/y_test.txt', 'w') as f:
-		f.write(','.join(list(map(str, y_test))))
-	"""
-
-	new_model = MlModel(model_title=model_title,
-						classifier=classifier,
-						tokenizer_type=tokenizer_type,
-						vectorization_type=vectorization_type,
-						use_default_stop_words=use_default_stop_words,
-						max_words=max_words,
-						min_token_len=min_token_len,
-						delete_numbers_flag=delete_numbers_flag,
-						user_id=User.get(username=username).id)
+	db_tokenizer = Tokenizer.get(tokenizer_type)
+	db_vectorization = Vectorization.get(vectorization_type)
+	new_model = MlModel(
+		model_title=model_title,
+		classifier=classifier,
+		use_default_stop_words=use_default_stop_words,
+		max_words=max_words,
+		min_token_len=min_token_len,
+		delete_numbers_flag=delete_numbers_flag,
+		user_id=db_user.id,
+		tokenizer_id=db_tokenizer.id,
+		vectorization_id=db_vectorization.id
+	)
 
 	new_model.save()
 
@@ -128,38 +105,39 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 	}
 
 
-def process_train_model_with_vectors_logic(model_title: str, classifier_type: str, vectors: list[list[int]], classes: list[int]):
-
-	check_ml_model_not_exists(model_title)
+def process_train_model_with_vectors_logic(model_title: str, classifier_type: str, vectors: list[list[int]],
+										   classes: list[int]):
+	username = request.authorization.username
+	db_user = User.get(username=username)
+	db_vectorization = Vectorization.get('unknown')
+	db_tokenizer = Vectorization.get('unknown')
+	check_ml_model_not_exists(model_title, db_user.id)
 
 	classifier = ClassifierFactory.get_classifier(classifier_type)
 	x_train, x_test, y_train, y_test = train_test_split(vectors, classes)
 	model = classifier.fit(x_train, y_train)
 
-	username = request.authorization.username
-
 	save_dir = current_app.config['TRAINED_MODELS']
 	MlModelSaver.verify_path(os.path.join(save_dir, username, model_title))  # ОБЯЗАТЕЛЬНО УБЕДИТЬСЯ
 	ml_model_saver = MlModelSaver(save_dir, username, model_title)
 
-
 	ml_model_saver.save_model(model)
-	# ml_model_saver.save_stop_words([], use_default_stop_words=False)
 	ml_model_saver.save_dataset(vectors, classes)
 
-	new_model = MlModel(model_title=model_title,
-						classifier=classifier_type,
-						tokenizer_type='unknown',
-						vectorization_type='unknown',
-						use_default_stop_words=False,
-						max_words=-1,
-						min_token_len=-1,
-						delete_numbers_flag=False,
-						user_id=User.get(username=username).id,
-						trained_self=True)
+	new_model = MlModel(
+		model_title=model_title,
+		classifier=classifier_type,
+		use_default_stop_words=False,
+		max_words=-1,
+		min_token_len=-1,
+		delete_numbers_flag=False,
+		trained_self=True,
+		user_id=db_user.id,
+		tokenizer_id=db_tokenizer.id,
+		vectorization_id=db_vectorization.id,
+	)
 
 	new_model.save()
-
 
 	from src.app.core.metrics.model_metrics_logic import process_user_calculate_model_metrics
 	metrics = process_user_calculate_model_metrics(model_title, get_from_db_flag=False)
@@ -171,6 +149,4 @@ def process_train_model_with_vectors_logic(model_title: str, classifier_type: st
 	new_model.save()
 
 	ml_model_saver.save_yaml_model_info()
-
-
-
+	return metrics
