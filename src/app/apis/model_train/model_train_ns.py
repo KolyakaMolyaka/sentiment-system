@@ -20,6 +20,7 @@ class ModelTrainWithTeacherAPIv1(Resource):
 	method_decorators = [requires_auth]
 
 	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Не совпадает число комментариев с числом классов.')
+	@ns.response(int(HTTPStatus.CONFLICT), 'Набор данных имеет длину меньше 2.')
 	@ns.response(int(HTTPStatus.NOT_FOUND), 'Указанный токенизатор / метод векторизации / классификатор не существует.')
 	@ns.expect(train_model)
 	@ns.doc(
@@ -35,6 +36,8 @@ class ModelTrainWithTeacherAPIv1(Resource):
 	)
 	def post(self):
 		""" Обучение модели МО с учителем согласно заданным параметрам """
+
+		MIN_SAMPLE_LEN = 2
 
 		from ..utilities import utils
 		utils.fill_with_default_values(ns.payload, train_model)
@@ -68,6 +71,11 @@ class ModelTrainWithTeacherAPIv1(Resource):
 		delete_numbers_flag = d.get('deleteNumbers')
 		excluded_default_stop_words = d.get('excludeDefaultStopWords')
 		punctuations = d.get('punctuations')
+
+		if len(comments) < MIN_SAMPLE_LEN:
+			abort(int(HTTPStatus.CONFLICT), f'Список comments должна иметь длину не меньше {MIN_SAMPLE_LEN}.')
+		elif len(classes) < MIN_SAMPLE_LEN:
+			abort(int(HTTPStatus.CONFLICT), f'Список classes должна иметь длину не меньше {MIN_SAMPLE_LEN}.')
 
 		if len(comments) != len(classes):
 			response = jsonify({
