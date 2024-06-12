@@ -54,6 +54,9 @@ def download_navec_data_command():
 def fill_db_command():
 	""" Заполнение БД данными по умолчанию """
 
+
+	return
+
 	unknown_tokenizer = Tokenizer(
 		title = 'unknown',
 		description = 'Неизвестный токенизатор. Пользователь обучал модель с помощью собственных векторов.'
