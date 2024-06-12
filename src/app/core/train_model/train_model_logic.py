@@ -144,7 +144,6 @@ def process_train_model_with_vectors_logic(model_title: str, classifier_type: st
 
 	from src.app.core.metrics.model_metrics_logic import process_user_calculate_model_metrics
 	metrics = process_user_calculate_model_metrics(model_title, get_from_db_flag=False)
-
 	new_model.model_accuracy = metrics['accuracy']
 	new_model.model_precision = metrics['precision']
 	new_model.model_recall = metrics['recall']

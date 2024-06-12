@@ -67,9 +67,6 @@ def process_user_calculate_model_metrics(model_title: str, get_from_db_flag: boo
 				)
 				print(classes)
 				classes.append(int(class_))
-				# classes.extend(
-				# 	[int(classes)] # преобразование строки в код
-				# )
 
 
 		# предсказание модели на основе датасета
