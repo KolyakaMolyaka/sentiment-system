@@ -54,12 +54,9 @@ def download_navec_data_command():
 def fill_db_command():
 	""" Заполнение БД данными по умолчанию """
 
-
-	return
-
 	unknown_tokenizer = Tokenizer(
-		title = 'unknown',
-		description = 'Неизвестный токенизатор. Пользователь обучал модель с помощью собственных векторов.'
+		title='unknown',
+		description='Неизвестный токенизатор. Пользователь обучал модель с помощью собственных векторов.'
 	)
 	unknown_tokenizer.save()
 
@@ -89,8 +86,8 @@ def fill_db_command():
 	# Информация о методах векторизации
 
 	unknown_vectorization = Vectorization(
-		title = 'unknown',
-		description = 'Неизвестный метод векторизации. Пользователь самостоятельно получал векторы и обучал модель на их основе.'
+		title='unknown',
+		description='Неизвестный метод векторизации. Пользователь самостоятельно получал векторы и обучал модель на их основе.'
 	)
 	unknown_vectorization.save()
 

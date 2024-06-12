@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from flask import jsonify
+from flask import jsonify, abort
 from flask_restx import Resource, Namespace
 from src.app.core.train_model.train_model_logic import train_model_logic, process_train_model_with_vectors_logic
 import pandas as pd
@@ -103,6 +103,7 @@ class ModelTrainWithTeacherAPIv2(Resource):
 	method_decorators = [requires_auth]
 
 	@ns.response(int(HTTPStatus.BAD_REQUEST), 'Размерность векторов не единого размера.')
+	@ns.response(int(HTTPStatus.CONFLICT), 'Длина набора данных меньше 2 или не совпадает (vectors != classes).')
 	@ns.expect(train_model_v2)
 	@ns.doc(
 		desctiption='Обучение модели с помощью полученных пользователем векторных представлений.'
@@ -111,12 +112,24 @@ class ModelTrainWithTeacherAPIv2(Resource):
 	def post(self):
 		""" Обучение модели с помощью меток и готовых векторных представлений """
 
+		MIN_TRAIN_SAMPLE_LEN = 2
 		d = ns.payload
 
 		model_title = d.get('modelTitle')
 		classifier = d.get('classifier')
 		vectors = d.get('vectors')
 		classes = d.get('classes')
+
+		vectors_len = len(vectors)
+		classes_len = len(classes)
+		if vectors_len < MIN_TRAIN_SAMPLE_LEN:
+			abort(int(HTTPStatus.CONFLICT), f'Длина набора данных должна быть не меньше {MIN_TRAIN_SAMPLE_LEN}! '
+											f'vectors не соблюдает это условие.')
+		elif classes_len < MIN_TRAIN_SAMPLE_LEN:
+			abort(int(HTTPStatus.CONFLICT), f'Длина набора данных должна быть не меньше {MIN_TRAIN_SAMPLE_LEN}! '
+											f'classes не соблюдает это условие.')
+		elif vectors_len != classes_len:
+			abort(int(HTTPStatus.CONFLICT), 'Длина набора данных различается: vectors и classes не совпадают!')
 
 		metrics = process_train_model_with_vectors_logic(model_title, classifier, vectors, classes)
 

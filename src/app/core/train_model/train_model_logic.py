@@ -118,7 +118,19 @@ def process_train_model_with_vectors_logic(model_title: str, classifier_type: st
 
 	classifier = ClassifierFactory.get_classifier(classifier_type)
 	x_train, x_test, y_train, y_test = train_test_split(vectors, classes)
-	model = classifier.fit(x_train, y_train)
+
+	try:
+		model = classifier.fit(x_train, y_train)
+	except ValueError:
+		abort(int(HTTPStatus.CONFLICT), {
+			'message': 'Для обучения необходимы выборки, имеющие разные классы. '
+					   'x_train и y_train - выборки для обучения. x_test, y_test - выборки для вычисления '
+					   'метрик качества модели. Попробуйте добавить больше выборок или сделайте их разнообразными. ',
+			'x_train': x_train,
+			'y_train': y_train,
+			'x_test': x_test,
+			'y_test': y_test
+		})
 
 	save_dir = current_app.config['TRAINED_MODELS']
 	MlModelSaver.verify_path(os.path.join(save_dir, username, model_title))  # ОБЯЗАТЕЛЬНО УБЕДИТЬСЯ
