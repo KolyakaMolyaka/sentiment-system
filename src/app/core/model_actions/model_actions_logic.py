@@ -106,4 +106,12 @@ def process_model_prediction_with_vector_request(model_title: str, vector: list[
 	ml_model = load_model(model_title)
 	print([vector])
 	if proba:
-		return ml_model.predict_proba([vector])
+		try:
+			return ml_model.predict_proba([vector])
+		except ValueError as e:
+			import re
+			numbers = re.findall(r'\d+', str(e))
+			given_features, trained_features = numbers
+			abort(int(HTTPStatus.CONFLICT), {
+				'error': f'Модель обучалась на входных данных с {trained_features} признаками, вы указали - {given_features}!'
+			})
