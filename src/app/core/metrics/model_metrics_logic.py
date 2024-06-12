@@ -38,7 +38,7 @@ def process_user_get_model_metrics(y_true: [str], y_pred: [str], positive_label:
 	return metrics
 
 
-def process_user_calculate_model_metrics(model_title: str, get_from_db_flag: bool):
+def process_user_calculate_model_metrics(model_title: str, get_from_db_flag: bool, save_in_db_flag: bool = True):
 	user = User.get(username=request.authorization.username)
 	ml_model = MlModel.query.filter_by(user_id=user.id, model_title=model_title).one_or_none()
 
@@ -87,11 +87,7 @@ def process_user_calculate_model_metrics(model_title: str, get_from_db_flag: boo
 
 		metrics: dict = process_user_get_model_metrics(y_true, y_pred, positive_label='Positive')
 
-		ml_model.model_recall = metrics['recall']
-		ml_model.model_accuracy = metrics['accuracy']
-		ml_model.model_precision = metrics['precision']
-		ml_model.save()
-		return metrics
+
 
 	else:
 		# TODO: расчёт метрик для обычных моделей
@@ -118,5 +114,9 @@ def process_user_calculate_model_metrics(model_title: str, get_from_db_flag: boo
 			y_pred.append(prediction_result)
 
 		metrics: dict = process_user_get_model_metrics(y_true, y_pred, positive_label='Positive')
-		return metrics
-#
+	if save_in_db_flag:
+		ml_model.model_recall = metrics['recall']
+		ml_model.model_accuracy = metrics['accuracy']
+		ml_model.model_precision = metrics['precision']
+		ml_model.save()
+	return metrics

@@ -80,6 +80,9 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 
 	db_tokenizer = Tokenizer.get(tokenizer_type)
 	db_vectorization = Vectorization.get(vectorization_type)
+	if vectorization_type == 'embeddings':
+		max_words = -1
+
 	new_model = MlModel(
 		model_title=model_title,
 		classifier=classifier,

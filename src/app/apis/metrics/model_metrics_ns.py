@@ -48,7 +48,8 @@ class ModelMetricsAPI(Resource):
 	@model_metrics_ns.expect(ml_model_metrics)
 	@model_metrics_ns.doc(
 		description='Получение основных метрик модели машинного обучения по названию. Флаг getFromDb '
-					'позволяет получить метрики из БД или рассчитать их заново (в т.ч. confusion matrix).',
+					'позволяет получить метрики из БД или рассчитать их заново (в т.ч. confusion matrix). '
+					'Флаг saveInDb сохраняет вновь рассчитанные метрики в БД.',
 		security='basicAuth'
 	)
 	def post(self):
@@ -57,8 +58,9 @@ class ModelMetricsAPI(Resource):
 
 		model_title = request_data.get('modelTitle')
 		get_from_db_flag = request_data.get('getFromDb')
+		save_in_db_flag = request_data.get('saveInDb')
 
-		metrics = process_user_calculate_model_metrics(model_title, get_from_db_flag)
+		metrics = process_user_calculate_model_metrics(model_title, get_from_db_flag, save_in_db_flag)
 
 		response = jsonify({
 			'metrics': metrics

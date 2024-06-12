@@ -17,6 +17,7 @@ input_to_output_model = Model('ModelInputToOutput', {
 
 ml_model_metrics = Model('MlModelMetrics', {
 	'modelTitle': fields.String(required=True, example='my_model'),
-	'getFromDb': fields.Boolean(required=True, example=False, default=False)
+	'getFromDb': fields.Boolean(required=True, example=False, default=False),
+	'saveInDb': fields.Boolean(required=True, example=False, default=False)
 })
 
