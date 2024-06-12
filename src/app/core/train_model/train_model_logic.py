@@ -124,11 +124,9 @@ def process_train_model_with_vectors_logic(model_title: str, classifier_type: st
 	except ValueError:
 		abort(int(HTTPStatus.CONFLICT), {
 			'message': 'Для обучения необходимы выборки, имеющие разные классы. '
-					   'x_train и y_train - выборки для обучения. x_test, y_test - выборки для вычисления '
+					   'y_train - выборки для обучения. y_test - выборки для вычисления '
 					   'метрик качества модели. Попробуйте добавить больше выборок или сделайте их разнообразными. ',
-			'x_train': x_train,
 			'y_train': y_train,
-			'x_test': x_test,
 			'y_test': y_test
 		})
 

@@ -1,7 +1,9 @@
+from http import HTTPStatus
 from abc import ABC, abstractmethod
 from sklearn.model_selection import train_test_split
 from .classifier_factory import ClassifierFactory
 import numpy as np
+from flask import abort
 
 from src.app.core.sentiment_analyse.tokenize_text import process_text_tokenization
 
@@ -68,7 +70,15 @@ class TrainTemplate(ABC):
 
 	def train(self, classifier, x_train, y_train, random_state=42, max_iter=500):
 		classifier = ClassifierFactory.get_classifier(classifier, random_state, max_iter)
-		classifier.fit(x_train, y_train)
+		try:
+			classifier.fit(x_train, y_train)
+		except ValueError:
+			abort(int(HTTPStatus.CONFLICT), {
+				'message': 'Для обучения необходимы выборки, имеющие разные классы. '
+						   'Выборки, которые используются для обучения y_train приведены ниже.'
+						   'Попробуйте добавить больше выборок или сделайте их разнообразными. ',
+				'y_train': y_train.tolist(),
+			})
 		return classifier
 
 
