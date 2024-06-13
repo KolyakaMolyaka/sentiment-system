@@ -10,14 +10,15 @@ def requires_auth(f):
 		# Требование к авторизованному доступу
 		auth = request.authorization
 		if not auth:
-			abort(int(HTTPStatus.UNAUTHORIZED), 'В HTTP запросе отсутствует заголовок Authorization, '
-												'добавьте заголовок с реквизитами username и password для авторизации.')
+			abort(
+				int(HTTPStatus.UNAUTHORIZED),
+				'В HTTP запросе отсутствует заголовок Authorization, '
+				'добавьте заголовок с реквизитами username и password для авторизации.')
 
 		username, password = getattr(auth, 'username', None), getattr(auth, 'password', None)
 		if not username or not password:
 			abort(int(HTTPStatus.UNAUTHORIZED), 'В заголовке Authorization отсутствует реквизит username или password.')
 
-		password_check(password)
 
 		u = User.query.filter_by(username=username).one_or_none()
 		if not u:
@@ -25,6 +26,8 @@ def requires_auth(f):
 
 		if not u.check_password(password):
 			abort(int(HTTPStatus.UNAUTHORIZED), f'Вы ввели неправильный пароль для пользователя {username}!')
+
+		password_check(password)
 
 		return f(*args, **kwargs)
 
