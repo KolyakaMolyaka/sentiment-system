@@ -42,7 +42,7 @@ class TrainTemplate(ABC):
 						delete_numbers_flag, excluded_default_stop_words, punctuations):
 		""" Токенизация текста """
 
-		# Токенизация текста
+		print('Токенизация текста')
 		df['preprocessed'] = df.apply(
 			lambda row: process_text_tokenization(tokenizer_type, row['text'],
 												  stop_words=stop_words,
@@ -84,6 +84,7 @@ class TrainTemplate(ABC):
 
 class TrainBagOfWordAlgorithm(TrainTemplate):
 	def create_sequences(self, df, max_words, ):
+		print('Создание последовательностей')
 		tokens = []
 		for row in df['preprocessed'].tolist():
 			tokens.extend(row)
@@ -96,6 +97,7 @@ class TrainBagOfWordAlgorithm(TrainTemplate):
 		return [word_to_index, index_to_word]
 
 	def create_train_and_test_samples(self, df, max_words):
+		print('Создание обучающей и тренировочной выборок')
 		train, test = self.train_test_split(df)
 		y_train, y_test = train['score'], test['score']
 		x_train = vectorize_sequences(train['sequences'], max_words)

@@ -3,6 +3,7 @@ version: '3.8'
 services:
   app:
     container_name: app
+    hostname: sentiment_application
     build: .
     ports:
       - 5000:5000

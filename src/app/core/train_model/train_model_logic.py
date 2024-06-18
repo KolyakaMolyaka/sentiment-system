@@ -41,6 +41,7 @@ def train_model_logic(df, tokenizer_type, stop_words, use_default_stop_words,
 		abort(int(HTTPStatus.NOT_FOUND, 'Неправильный тип векторизации'))
 
 	# Обучение модели и получение данных её обучения
+	print('Начало обучения модели')
 	trained_model, \
 		x_train, \
 		y_train, \
