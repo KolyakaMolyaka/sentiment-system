@@ -137,6 +137,7 @@ def process_train_model_with_vectors_logic(model_title: str, classifier_type: st
 
 	ml_model_saver.save_model(model)
 	ml_model_saver.save_dataset(vectors, classes)
+	ml_model_saver.save_roc_curve(model, x_test, y_test)
 
 	new_model = MlModel(
 		model_title=model_title,
