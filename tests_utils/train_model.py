@@ -1,3 +1,5 @@
+import random
+
 import requests
 import json
 from create_url import CreateUrl
@@ -37,7 +39,8 @@ def user_train_model(user: dict, dataset_filepath: str):
 	comments = []
 	classes = []
 	class_mapper = lambda x: 0 if x <= 3 else 1
-	for feedback in data:
+	LIMIT = 1_000_000
+	for feedback in data[:LIMIT]:
 		comment = feedback['text']
 		val = feedback['val']
 		comment_class = class_mapper(val)
@@ -47,7 +50,7 @@ def user_train_model(user: dict, dataset_filepath: str):
 	print(list(zip(comments, classes))[:3])
 
 	model = {
-		"modelTitle": "my_pretrained_model",
+		"modelTitle": "my_pretrained_model2",
 		"classifier": "logistic-regression",
 		"tokenizerType": "nltk-tokenizer",
 		"vectorizationType": "bag-of-words",
@@ -68,7 +71,7 @@ def user_train_model(user: dict, dataset_filepath: str):
 		"deleteNumbers": True,
 		"comments": comments,
 		"classes": classes,
-		"maxWords": 500_000
+		"maxWords": 10_000
 	}
 
 	response = session.post(

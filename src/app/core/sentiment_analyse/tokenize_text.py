@@ -89,6 +89,7 @@ def process_text_tokenization(tokenizer_type: str, text: str,
 
 		preprocessed_text.append(lemma)
 
+	# print('Выделенные токены', preprocessed_text)
 	return preprocessed_text, stop_words
 
 
