@@ -1,10 +1,11 @@
 import os
 import pickle
 import csv
+import json
 from src.app.ext.database.models import MlModel, User, Vectorization, Tokenizer
 from flask import request, abort, current_app
 from http import HTTPStatus
-from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens_in_seq_of_codes, vectorize_sequences
+from src.app.core.sentiment_analyse.vectorize_text import process_convert_tokens_in_seq_of_codes, vectorize_sequences, text_to_sequence
 from src.app.core.sentiment_analyse.tokenize_text import process_text_tokenization
 from src.app.core.sentiment_analyse.vectorize_text import vectorize_text
 import numpy as np
@@ -84,7 +85,14 @@ def process_model_prediction_request(model_title, text, proba=True):
 		preprocessed, stop_words = process_text_tokenization(db_tokenizer.title, text,
 															 stop_words=stop_words,
 															 use_default_stop_words=db_model.use_default_stop_words)
-		seq, word_to_index, index_to_word = process_convert_tokens_in_seq_of_codes(preprocessed, db_model.max_words)
+
+
+		word_to_index_filename = os.path.join(current_app.config['TRAINED_MODELS'], db_user.username, model_title, 'word_to_index.json')
+		with open(word_to_index_filename, 'r', encoding='utf-8') as f:
+			word_to_index = json.load(f)
+
+		seq = text_to_sequence(preprocessed, word_to_index)
+		# seq, word_to_index, index_to_word = process_convert_tokens_in_seq_of_codes(preprocessed, db_model.max_words)
 		bow = vectorize_sequences([seq], db_model.max_words)
 		if proba:
 			return ml_model.predict_proba(bow)
