@@ -13,6 +13,25 @@ def process_vectorization_info(vectorization_title):
 	return vectorization.description
 
 
+def print_vectorization(func):
+	i = 0
+	LIMIT = 1_000
+
+	def decorator(*args, **kwargs):
+		nonlocal i, LIMIT
+		res = func(*args, **kwargs)
+		if i % 50 == 0:
+			print(i, '/', LIMIT)
+		i += 1
+		if i == LIMIT:
+			print('reset LIMIT vectorization')
+
+		return res
+
+	return decorator
+
+
+@print_vectorization
 def vectorize_text(txt: list[str], max_review_len: int):
 	"""
 	Векторизация текста на основе имеющихся токенов
@@ -70,8 +89,8 @@ def text_to_sequence(txt: list[str], word_to_index: dict):
 		# в выходную последовательность попадают коды неизвестных слов, если это необходимо
 		# в ином случае, они не попадают в неё
 		seq.append(index)
-		# if index != 1:
-		# 	seq.append(index)
+	# if index != 1:
+	# 	seq.append(index)
 	return seq
 
 
@@ -93,7 +112,6 @@ def process_convert_tokens_in_seq_of_codes(tokens: list[str], max_words: int = -
 	for t in tokens:
 		words.update([t])
 
-
 	# код заполнитель
 	filler_code_str = 'код заполнитель'
 	filler_code = 0
@@ -103,10 +121,10 @@ def process_convert_tokens_in_seq_of_codes(tokens: list[str], max_words: int = -
 	unknown_code = 1
 
 	# словарь, отображающий слова в коды
-	word_to_index = { filler_code_str: filler_code, unknown_code_str: unknown_code }
+	word_to_index = {filler_code_str: filler_code, unknown_code_str: unknown_code}
 
 	# словарь, отображающий коды в слова
-	index_to_word = { filler_code: filler_code_str, unknown_code: unknown_code_str }
+	index_to_word = {filler_code: filler_code_str, unknown_code: unknown_code_str}
 
 	# создание словарей
 	for ind, word_tuple in enumerate(words.most_common(max_words - 2)):

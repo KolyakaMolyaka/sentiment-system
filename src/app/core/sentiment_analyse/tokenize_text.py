@@ -8,13 +8,36 @@ from .tokenizer_factory import TokenizerFactory
 
 def process_get_default_stop_words() -> list:
 	return nltk.corpus.stopwords.words('russian')
+
+
+def print_tokens(func):
+	i = 0
+	LIMIT = 20_000
+
+	def decorator(*args, **kwargs):
+		nonlocal i, LIMIT
+		preprocessed_text, stop_words = func(*args, **kwargs)
+		if i % 50 == 0:
+			print(i, '/', LIMIT)
+		i += 1
+		if i == LIMIT:
+			i = 0
+			print('reset LIMIT!')
+
+		return preprocessed_text, stop_words
+
+
+	return decorator
+
+
+@print_tokens
 def process_text_tokenization(tokenizer_type: str, text: str,
 							  punctuation_marks=None, stop_words=None,
 							  morph=None,
 							  use_default_stop_words=True,
 							  min_token_len=1,
 							  delete_numbers_flag=False,
-							  excluded_default_stop_words: list =None,
+							  excluded_default_stop_words: list = None,
 							  ) -> tuple[list[str], list[str]]:
 	"""
 	Вход:

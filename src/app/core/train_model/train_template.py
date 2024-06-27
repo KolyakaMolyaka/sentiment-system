@@ -55,6 +55,16 @@ class TrainTemplate(ABC):
 			axis=1  # axis=1 means row
 		)
 
+		tokens = 0
+		tokens_set = set()
+		for tokens_lst in df['preprocessed'].tolist():
+			tokens += len(tokens_lst)
+			for t in tokens_lst: tokens_set.add(t)
+		print('Всего токенов выделено:', tokens)
+		print('Всего уникальных токенов:', len(tokens_set))
+
+
+
 	@abstractmethod
 	def create_sequences(self, df, max_words):
 		pass
@@ -100,6 +110,7 @@ class TrainBagOfWordAlgorithm(TrainTemplate):
 		print('Создание обучающей и тренировочной выборок')
 		train, test = self.train_test_split(df)
 		y_train, y_test = train['score'], test['score']
+		print('Векторизация последовательностей')
 		x_train = vectorize_sequences(train['sequences'], max_words)
 		x_test = vectorize_sequences(test['sequences'], max_words)
 		df['vectors'] = df.apply(lambda row: vectorize_sequences([row['sequences']], max_words)[0], axis=1)
@@ -108,13 +119,16 @@ class TrainBagOfWordAlgorithm(TrainTemplate):
 
 class TrainEmbeddingsAlgorithm(TrainTemplate):
 	def create_sequences(self, df, max_words):
+		print('create sequences...')
 		df['sequences'] = df.apply(lambda row:
 								   vectorize_text(row['preprocessed'], 100)
 								   , axis=1)
 
 	def create_train_and_test_samples(self, df, max_words):
+		print('splitting dataset...')
 		train, test = self.train_test_split(df)
 		y_train, y_test = train['score'], test['score']
+		print('reshaping...')
 		x_train = np.array(train['sequences'].tolist()).reshape(len(train), 300 * 100)
 		x_test = np.array(test['sequences'].tolist()).reshape(len(test), 300 * 100)
 		return x_train, y_train, x_test, y_test
